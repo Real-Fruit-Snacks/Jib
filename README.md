@@ -1,6 +1,10 @@
 <div align="center">
 
-# jib
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Real-Fruit-Snacks/jib/main/docs/assets/logo-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Real-Fruit-Snacks/jib/main/docs/assets/logo-light.svg">
+  <img alt="jib" src="https://raw.githubusercontent.com/Real-Fruit-Snacks/jib/main/docs/assets/logo-dark.svg" width="420">
+</picture>
 
 ![Rust](https://img.shields.io/badge/language-Rust-dea584.svg)
 ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey)

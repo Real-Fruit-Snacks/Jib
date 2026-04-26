@@ -387,10 +387,14 @@ enum F {
     ArrayCtor(Box<F>),
     ObjCtor(Vec<(String, F)>),
     Call(String, Vec<F>),
-    /// Binary arithmetic — op is one of "+", "-", "*", "/", "%". Each side
-    /// produces a stream; the cross-product of values is folded with the
-    /// operator (matches jq's spec).
+    /// Binary arithmetic / comparison — op is one of "+", "-", "*", "/",
+    /// "%", "==", "!=", "<", "<=", ">", ">=". Each side produces a stream;
+    /// the cross-product of values is folded with the operator (matches
+    /// jq's spec).
     Bin(String, Box<F>, Box<F>),
+    /// `lhs // rhs` — produce values from `lhs` that are not null/false;
+    /// if none remain, evaluate `rhs` instead.
+    Alt(Box<F>, Box<F>),
 }
 
 struct PFilter<'a> {
@@ -422,12 +426,12 @@ impl<'a> PFilter<'a> {
         Ok(l)
     }
     fn parse_comma(&mut self) -> Result<F, String> {
-        let mut parts = vec![self.parse_compare()?];
+        let mut parts = vec![self.parse_alternative()?];
         loop {
             self.skip_ws();
             if self.i < self.s.len() && self.s[self.i] == b',' {
                 self.i += 1;
-                parts.push(self.parse_compare()?);
+                parts.push(self.parse_alternative()?);
             } else {
                 break;
             }
@@ -438,8 +442,25 @@ impl<'a> PFilter<'a> {
             Ok(F::Comma(parts))
         }
     }
+    /// `//` alternative operator. Left-associative, sits between comma
+    /// and compare in jq's precedence chain.
+    fn parse_alternative(&mut self) -> Result<F, String> {
+        let mut l = self.parse_compare()?;
+        loop {
+            self.skip_ws();
+            if self.i + 1 < self.s.len() && self.s[self.i] == b'/' && self.s[self.i + 1] == b'/' {
+                self.i += 2;
+                let r = self.parse_compare()?;
+                l = F::Alt(Box::new(l), Box::new(r));
+            } else {
+                break;
+            }
+        }
+        Ok(l)
+    }
     /// Comparison operators `==`, `!=`, `<`, `<=`, `>`, `>=`. Sit between
-    /// comma and addsub so arithmetic results feed in. Left-associative.
+    /// alternative and addsub so arithmetic results feed in.
+    /// Left-associative.
     fn parse_compare(&mut self) -> Result<F, String> {
         let mut l = self.parse_addsub()?;
         loop {
@@ -751,12 +772,12 @@ impl<'a> PFilter<'a> {
         Ok(node)
     }
     fn parse_pipe_no_comma(&mut self) -> Result<F, String> {
-        let mut l = self.parse_compare()?;
+        let mut l = self.parse_alternative()?;
         loop {
             self.skip_ws();
             if self.i < self.s.len() && self.s[self.i] == b'|' {
                 self.i += 1;
-                let r = self.parse_compare()?;
+                let r = self.parse_alternative()?;
                 l = F::Pipe(Box::new(l), Box::new(r));
             } else {
                 break;
@@ -1013,6 +1034,21 @@ fn apply(f: &F, v: &J) -> Result<Vec<J>, String> {
                 }
             }
             Ok(out)
+        }
+        F::Alt(l, r) => {
+            // jq's // : keep all LHS values that are neither null nor false;
+            // if every LHS value is filtered out (or the LHS produces no
+            // values at all), evaluate the RHS instead.
+            let lvs = apply(l, v).unwrap_or_default();
+            let kept: Vec<J> = lvs
+                .into_iter()
+                .filter(|j| !matches!(j, J::Null | J::Bool(false)))
+                .collect();
+            if kept.is_empty() {
+                apply(r, v)
+            } else {
+                Ok(kept)
+            }
         }
     }
 }

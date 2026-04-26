@@ -203,6 +203,13 @@ def load_manifest() -> list[Case]:
             input=b'[{"a":1},{"a":2},{"a":3}]\n',
         ),
         Case("jq_cmp_length_ge", ["jq", "length >= 3"], input=b"[1,2,3]\n"),
+        # // alternative operator: missing field, explicit null, present value,
+        # explicit false, and zero (truthy in jq, so // does NOT replace).
+        Case("jq_alt_missing", ["jq", '.missing // "default"'], input=b"{}\n"),
+        Case("jq_alt_null", ["jq", ".x // 42"], input=b'{"x": null}\n'),
+        Case("jq_alt_present", ["jq", ".x // 42"], input=b'{"x": 5}\n'),
+        Case("jq_alt_false", ["jq", '.x // "fallback"'], input=b'{"x": false}\n'),
+        Case("jq_alt_zero_truthy", ["jq", '.x // "fallback"'], input=b'{"x": 0}\n'),
     ]
 
     # HTTP/HTTPS — only enabled if HARNESS_NETWORK=1 to avoid flaky CI.

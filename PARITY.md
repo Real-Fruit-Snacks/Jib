@@ -82,7 +82,7 @@ Python implementation.
 
 ## JSON (`--features json`, 1 applet)
 
-| jq         | 🟡 | Identity, fields (`.foo`, `.foo.bar`, `.["k"]`), index `.[0]`, slice `.[2:5]`, iterate `.[]`, optional `?`, pipe `\|`, comma `,`, parens, array/object constructors. **Arithmetic** (`+ - * / %`) with type-aware coercion (number/number, string concat, array concat, object merge, array-minus-array, string division → array of parts). **Comparisons** (`== != < <= > >=`) with jq's canonical type ordering (null < false < true < number < string < array < object). **Alternative** (`//`) — keep non-null/false LHS values, fall back to RHS otherwise. Built-ins: length, keys, values, type, has, select, map, not, empty, tostring, tonumber, add, min, max, first, last, reverse, sort, unique. **Not implemented**: conditionals (`if/then/elif/else/end`), recursive descent (`..`), `path()`, `paths()`, `to_entries`, `from_entries`, `with_entries`, `split`, `join`, `ltrimstr`/`rtrimstr`, `startswith`/`endswith`, `ascii_downcase`/`upcase`, `floor`/`ceil`/`sqrt`, `any`/`all`/`isempty`, `ascii`, `explode`/`implode`, user functions. |
+| jq         | 🟡 | Identity, fields (`.foo`, `.foo.bar`, `.["k"]`), index `.[0]`, slice `.[2:5]`, iterate `.[]`, optional `?`, pipe `\|`, comma `,`, parens, array/object constructors. **Arithmetic** (`+ - * / %`) with type-aware coercion (number/number, string concat, array concat, object merge, array-minus-array, string division → array of parts). **Comparisons** (`== != < <= > >=`) with jq's canonical type ordering (null < false < true < number < string < array < object). **Alternative** (`//`) — keep non-null/false LHS values, fall back to RHS otherwise. **Conditionals** `if/then/elif/else/end` with input-passthrough on no-else. Built-ins: length, keys, values, type, has, select, map, not, empty, tostring, tonumber, add, min, max, first, last, reverse, sort, unique. **Not implemented**: recursive descent (`..`), `path()`, `paths()`, `to_entries`, `from_entries`, `with_entries`, `split`, `join`, `ltrimstr`/`rtrimstr`, `startswith`/`endswith`, `ascii_downcase`/`upcase`, `floor`/`ceil`/`sqrt`, `any`/`all`/`isempty`, `ascii`, `explode`/`implode`, user functions. |
 
 ## Misc extras (`--features extras`, 19 applets)
 
@@ -93,9 +93,10 @@ Python implementation.
 - **Reference (mainsail v0.2.1):** 73 applets
 - **`jib`:** 73 applets (full feature set)
 - **`jib --features slim`:** 34 applets, ~545 KB release binary on Windows x64
-- **Parity harness cases passing:** 101/101 across the basic / cut / sort / uniq / cat / printf / date / tr / grep / sed / awk / jq surfaces
+- **Parity harness cases passing:** 106/106 across the basic / cut / sort / uniq / cat / printf / date / tr / grep / sed / awk / jq surfaces
 
 The known 🟡 gaps are documented above and tracked in the upstream
 `CHANGELOG.md` for follow-up versions. With arithmetic, comparisons,
-and the `//` alternative landed, the remaining jq follow-ups are
-`if/then/else` and the string built-in surface.
+the `//` alternative, and `if/then/else` landed, the remaining jq
+follow-up is the string built-in surface (`split`, `join`,
+`startswith`, `endswith`, `ltrimstr`/`rtrimstr`, ascii case).

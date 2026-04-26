@@ -395,6 +395,9 @@ enum F {
     /// `lhs // rhs` — produce values from `lhs` that are not null/false;
     /// if none remain, evaluate `rhs` instead.
     Alt(Box<F>, Box<F>),
+    /// `if cond then then_ else else_? end`. elif chains are parsed into
+    /// nested If nodes so this single shape is enough at eval time.
+    If(Box<F>, Box<F>, Option<Box<F>>),
 }
 
 struct PFilter<'a> {
@@ -632,6 +635,14 @@ impl<'a> PFilter<'a> {
             "null" => return Ok(F::NullLit),
             "true" => return Ok(F::BoolLit(true)),
             "false" => return Ok(F::BoolLit(false)),
+            "if" => return self.parse_if_after_keyword(),
+            // Reserved if/then/elif/else/end keywords — if we hit one of
+            // these in term position it means an outer parse_if is waiting
+            // for it. Rewind so the outer caller can advance past it.
+            "then" | "elif" | "else" | "end" => {
+                self.i = start;
+                return Ok(F::Identity);
+            }
             _ => {}
         }
         // optional arglist
@@ -770,6 +781,69 @@ impl<'a> PFilter<'a> {
             break;
         }
         Ok(node)
+    }
+    /// True if, after skipping whitespace, the next token is `kw` followed
+    /// by a non-identifier byte (so "thenfoo" doesn't match "then").
+    fn peek_keyword(&self, kw: &str) -> bool {
+        let kb = kw.as_bytes();
+        let mut j = self.i;
+        while j < self.s.len() && matches!(self.s[j], b' ' | b'\t' | b'\n' | b'\r') {
+            j += 1;
+        }
+        if j + kb.len() > self.s.len() {
+            return false;
+        }
+        if &self.s[j..j + kb.len()] != kb {
+            return false;
+        }
+        let after = j + kb.len();
+        if after < self.s.len() && (self.s[after].is_ascii_alphanumeric() || self.s[after] == b'_')
+        {
+            return false;
+        }
+        true
+    }
+    fn consume_keyword(&mut self, kw: &str) -> Result<(), String> {
+        if !self.peek_keyword(kw) {
+            return Err(format!("expected '{kw}'"));
+        }
+        self.skip_ws();
+        self.i += kw.len();
+        Ok(())
+    }
+    /// Parse the body of an `if` after the `if` keyword has been consumed:
+    /// `COND then THEN (elif COND then THEN)* (else ELSE)? end`.
+    /// elif chains are flattened into nested F::If nodes so eval has a
+    /// single shape to handle.
+    fn parse_if_after_keyword(&mut self) -> Result<F, String> {
+        let cond = self.parse_pipe()?;
+        self.consume_keyword("then")?;
+        let then_ = self.parse_pipe()?;
+        let mut elifs: Vec<(F, F)> = Vec::new();
+        let mut else_branch: Option<F> = None;
+        loop {
+            if self.peek_keyword("elif") {
+                self.consume_keyword("elif")?;
+                let ec = self.parse_pipe()?;
+                self.consume_keyword("then")?;
+                let et = self.parse_pipe()?;
+                elifs.push((ec, et));
+            } else if self.peek_keyword("else") {
+                self.consume_keyword("else")?;
+                else_branch = Some(self.parse_pipe()?);
+                break;
+            } else {
+                break;
+            }
+        }
+        self.consume_keyword("end")?;
+        // Right-fold the elif chain into nested else-branches so the AST
+        // only ever sees the simple If(cond, then, else?) shape.
+        let mut tail = else_branch.map(Box::new);
+        while let Some((ec, et)) = elifs.pop() {
+            tail = Some(Box::new(F::If(Box::new(ec), Box::new(et), tail)));
+        }
+        Ok(F::If(Box::new(cond), Box::new(then_), tail))
     }
     fn parse_pipe_no_comma(&mut self) -> Result<F, String> {
         let mut l = self.parse_alternative()?;
@@ -1049,6 +1123,23 @@ fn apply(f: &F, v: &J) -> Result<Vec<J>, String> {
             } else {
                 Ok(kept)
             }
+        }
+        F::If(cond, then_, else_) => {
+            // Each value the cond produces picks a branch independently;
+            // both branches see the original input. With no else clause,
+            // a falsy cond passes the input through unchanged (jq spec).
+            let cvs = apply(cond, v)?;
+            let mut out = Vec::new();
+            for cv in cvs {
+                if truthy(&cv) {
+                    out.extend(apply(then_, v)?);
+                } else if let Some(e) = else_ {
+                    out.extend(apply(e, v)?);
+                } else {
+                    out.push(v.clone());
+                }
+            }
+            Ok(out)
         }
     }
 }

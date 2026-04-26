@@ -210,6 +210,36 @@ def load_manifest() -> list[Case]:
         Case("jq_alt_present", ["jq", ".x // 42"], input=b'{"x": 5}\n'),
         Case("jq_alt_false", ["jq", '.x // "fallback"'], input=b'{"x": false}\n'),
         Case("jq_alt_zero_truthy", ["jq", '.x // "fallback"'], input=b'{"x": 0}\n'),
+        # if/then/elif/else/end: basic, elif chain, no-else passthrough,
+        # if inside map.
+        Case(
+            "jq_if_basic_true",
+            ["jq", 'if . > 3 then "big" else "small" end'],
+            input=b"5\n",
+        ),
+        Case(
+            "jq_if_basic_false",
+            ["jq", 'if . > 3 then "big" else "small" end'],
+            input=b"2\n",
+        ),
+        Case(
+            "jq_if_elif_chain",
+            [
+                "jq",
+                'if . == 1 then "one" elif . == 2 then "two" elif . == 5 then "five" else "other" end',
+            ],
+            input=b"5\n",
+        ),
+        Case(
+            "jq_if_no_else_passthrough",
+            ["jq", 'if . > 100 then "huge" end'],
+            input=b"5\n",
+        ),
+        Case(
+            "jq_if_in_map",
+            ["jq", "-c", "map(if . > 2 then . * 10 else . end)"],
+            input=b"[1,2,3,4,5]\n",
+        ),
     ]
 
     # HTTP/HTTPS — only enabled if HARNESS_NETWORK=1 to avoid flaky CI.

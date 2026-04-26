@@ -7,14 +7,50 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Tracked under the [v0.2.0 milestone](https://github.com/Real-Fruit-Snacks/jib/milestone/1):
+## [0.2.0] - 2026-04-26
 
-- **`http`**: HTTPS support via `rustls` ([#1](https://github.com/Real-Fruit-Snacks/jib/issues/1))
-- **`jq`**: arithmetic ([#2](https://github.com/Real-Fruit-Snacks/jib/issues/2)), comparisons ([#3](https://github.com/Real-Fruit-Snacks/jib/issues/3)), `if/then/elif/else/end` ([#4](https://github.com/Real-Fruit-Snacks/jib/issues/4)), `//` alternative ([#5](https://github.com/Real-Fruit-Snacks/jib/issues/5)), string built-ins ([#6](https://github.com/Real-Fruit-Snacks/jib/issues/6))
-- **CI**: parity harness on Linux + macOS ([#7](https://github.com/Real-Fruit-Snacks/jib/issues/7))
-- **Stretch**: `chrono`-backed `date` ([#8](https://github.com/Real-Fruit-Snacks/jib/issues/8)); 5 small upstream-only applets ([#9](https://github.com/Real-Fruit-Snacks/jib/issues/9)); `touch -a` via `filetime` ([#10](https://github.com/Real-Fruit-Snacks/jib/issues/10))
+Closes the entire [v0.2.0 milestone](https://github.com/Real-Fruit-Snacks/jib/milestone/1) (10/10 issues). Most of the documented `🟡` parity gaps from v0.1.0 are fixed, the applet count grows from 73 → 78, and the `extras` group nearly doubles.
 
-Long tail tracked in [#11](https://github.com/Real-Fruit-Snacks/jib/issues/11).
+### Added
+
+**5 new applets** (all under the `extras` feature):
+
+- `base64` — RFC 4648 encode/decode with `-d`/`-w COLS`/`-i`. Hand-rolled, no third-party dep.
+- `fold` — wrap to width with `-w`/`-s`, plus `-N` POSIX shorthand.
+- `column` — table mode (`-t`) with column auto-sizing and `-s SEP` for non-whitespace separators.
+- `id` — `-u`/`-g`/`-G`/`-n` with combined-flag short blocks (`-un`, `-Gn`). Best-effort without libc.
+- `groups` — equivalent to `id -Gn`.
+
+**`jq` language** ([#2](https://github.com/Real-Fruit-Snacks/jib/issues/2), [#3](https://github.com/Real-Fruit-Snacks/jib/issues/3), [#4](https://github.com/Real-Fruit-Snacks/jib/issues/4), [#5](https://github.com/Real-Fruit-Snacks/jib/issues/5), [#6](https://github.com/Real-Fruit-Snacks/jib/issues/6)):
+
+- Arithmetic operators `+ - * / %` with full type-aware coercion (number/number, string concat, array concat, object right-merge, array minus, string division → split, null as additive identity, div/mod by zero errors)
+- Comparison operators `== != < <= > >=` with jq's canonical type ordering (`null < false < true < number < string < array < object`)
+- Alternative operator `//` — keep non-null/false LHS values, fall through to RHS otherwise
+- Conditionals `if/then/elif/else/end` with input-passthrough on no-`else`
+- 8 string built-ins: `split`, `join`, `startswith`, `endswith`, `ltrimstr`, `rtrimstr`, `ascii_downcase`, `ascii_upcase`
+
+### Changed
+
+- **`http`** ([#1](https://github.com/Real-Fruit-Snacks/jib/issues/1)) — HTTPS support via `rustls` 0.23 + the `webpki-roots` Mozilla bundle. The HTTPS caveat in PARITY/README/docs is gone.
+- **`date`** ([#8](https://github.com/Real-Fruit-Snacks/jib/issues/8)) — strftime, calendar math, and TZ resolution are now backed by `chrono` (with the `clock` feature for `iana-time-zone`). `+%z` now reflects the parsed input offset (was always `+0000`); `-d` accepts RFC 3339 with offsets, the space-instead-of-T variant, zone-naive forms, and the GNU `@<unix>` epoch extension.
+- **`touch`** ([#10](https://github.com/Real-Fruit-Snacks/jib/issues/10)) — atime is now actually settable via the `filetime` crate (was a best-effort no-op pre-v0.2.0). `-a`/`-r`/`-d` all do the right thing on Linux/macOS/Windows.
+- **CI** ([#7](https://github.com/Real-Fruit-Snacks/jib/issues/7)) — parity harness now runs on both `ubuntu-latest` and `macos-latest`; previously Ubuntu-only.
+
+### Quality gates
+
+- Parity harness: 76 → **126 cases** (100% match across Linux + macOS)
+- Native integration tests: 29 → **31** (added `touch -a` and `touch -r` coverage)
+- All `clippy --all-targets -- -D warnings` clean on both `full` and `slim` feature sets
+- Release matrix: 11 native binaries (Linux x64 glibc + musl, Linux ARM64, Windows x64, Windows ARM64, macOS ARM64; full + slim where applicable)
+
+### Known gaps remaining
+
+Documented in [`PARITY.md`](PARITY.md). The remaining `🟡` markers are now the long-tail items:
+
+- `jq`: recursive descent (`..`), `to_entries`/`from_entries`/`with_entries`, math built-ins (`floor`/`ceil`/`sqrt`), user-defined functions
+- `awk`: user-defined functions, `getline`, regex `FS`, SUBSEP-based multidim arrays
+- `uname -r/-v/-p` returns `"unknown"` on Windows (needs registry/WMI)
+- `id`/`groups`: best-effort without libc — IDs are zeros, group derived from user name
 
 ## [0.1.0] - 2026-04-26
 
@@ -68,5 +104,6 @@ Documented in [`PARITY.md`](PARITY.md). The largest are:
 - `touch -a` is best-effort; stable Rust lacks `set_accessed`
 - `date %z` always emits `+0000`
 
-[Unreleased]: https://github.com/Real-Fruit-Snacks/jib/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Real-Fruit-Snacks/jib/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Real-Fruit-Snacks/jib/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Real-Fruit-Snacks/jib/releases/tag/v0.1.0

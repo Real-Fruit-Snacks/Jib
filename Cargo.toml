@@ -1,9 +1,9 @@
 [package]
 name = "jib"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.75"
-description = "A BusyBox-style multi-call binary in Rust — 73 Unix utilities in one executable. Sister project to Real-Fruit-Snacks/mainsail."
+description = "A BusyBox-style multi-call binary in Rust — 78 Unix utilities in one executable. Sister project to Real-Fruit-Snacks/mainsail."
 license = "MIT"
 authors = ["Matt"]
 repository = "https://github.com/Real-Fruit-Snacks/jib"

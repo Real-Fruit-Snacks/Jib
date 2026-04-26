@@ -22,9 +22,12 @@ pub fn err_path(applet: &str, path: &str, e: &io::Error) {
 /// `.com`/`.ps1`.
 #[allow(clippy::needless_return)]
 pub fn unix_mode(meta: &Metadata, path: &std::path::Path) -> u32 {
+    // `path` is only consulted on Windows (for the executable-extension
+    // heuristic), so explicitly discard it on Unix to keep clippy quiet.
     #[cfg(unix)]
     {
         use std::os::unix::fs::MetadataExt;
+        let _ = path;
         return meta.mode();
     }
     #[cfg(windows)]

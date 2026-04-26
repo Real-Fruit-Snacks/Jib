@@ -172,6 +172,24 @@ def load_manifest() -> list[Case]:
         Case("sed_eq", ["sed", "="], input=b"a\nb\n"),
     ]
 
+    # jq arithmetic — issue #2.
+    cases += [
+        Case("jq_arith_int_add", ["jq", ". + 1"], input=b"5\n"),
+        Case("jq_arith_int_sub", ["jq", ". - 3"], input=b"10\n"),
+        Case("jq_arith_int_mul", ["jq", ". * 4"], input=b"6\n"),
+        # 21/4 picked over 20/4 to side-step a Python int/float quirk:
+        # Python's `/` always yields float, so 20/4 prints as "5.0" while
+        # Rust (single f64 type) prints "5". Non-whole results format the
+        # same on both sides.
+        Case("jq_arith_int_div", ["jq", ". / 4"], input=b"21\n"),
+        Case("jq_arith_int_mod", ["jq", ". % 3"], input=b"7\n"),
+        Case("jq_arith_map_add", ["jq", "-c", "map(. + 1)"], input=b"[1,2,3]\n"),
+        Case("jq_arith_str_concat", ["jq", '. + "world"'], input=b'"hello "\n'),
+        Case("jq_arith_arr_concat", ["jq", "-c", ". + [3,4]"], input=b"[1,2]\n"),
+        Case("jq_arith_obj_merge", ["jq", "-c", '. + {"b":2}'], input=b'{"a":1}\n'),
+        Case("jq_arith_str_split", ["jq", "-c", '. / ","'], input=b'"a,b,c"\n'),
+    ]
+
     # HTTP/HTTPS — only enabled if HARNESS_NETWORK=1 to avoid flaky CI.
     # Compares status code only (response body changes by date/host).
     if os.environ.get("HARNESS_NETWORK") == "1":

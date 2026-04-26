@@ -82,7 +82,7 @@ Python implementation.
 
 ## JSON (`--features json`, 1 applet)
 
-| jq         | 🟡 | Identity, fields (`.foo`, `.foo.bar`, `.["k"]`), index `.[0]`, slice `.[2:5]`, iterate `.[]`, optional `?`, pipe `\|`, comma `,`, parens, array/object constructors. Built-ins: length, keys, values, type, has, select, map, not, empty, tostring, tonumber, add, min, max, first, last, reverse, sort, unique. **Not implemented**: arithmetic operators (`+ - * /`), comparison operators (`< > == !=`), `//` alternative, conditionals (`if/then/elif/else/end`), recursive descent (`..`), `path()`, `paths()`, `to_entries`, `from_entries`, `with_entries`, `split`, `join`, `ltrimstr`/`rtrimstr`, `startswith`/`endswith`, `ascii_downcase`/`upcase`, `floor`/`ceil`/`sqrt`, `any`/`all`/`isempty`, `ascii`, `explode`/`implode`, user functions. |
+| jq         | 🟡 | Identity, fields (`.foo`, `.foo.bar`, `.["k"]`), index `.[0]`, slice `.[2:5]`, iterate `.[]`, optional `?`, pipe `\|`, comma `,`, parens, array/object constructors. **Arithmetic** (`+ - * / %`) with type-aware coercion (number/number, string concat, array concat, object merge, array-minus-array, string division → array of parts). Built-ins: length, keys, values, type, has, select, map, not, empty, tostring, tonumber, add, min, max, first, last, reverse, sort, unique. **Not implemented**: comparison operators (`< > == !=`), `//` alternative, conditionals (`if/then/elif/else/end`), recursive descent (`..`), `path()`, `paths()`, `to_entries`, `from_entries`, `with_entries`, `split`, `join`, `ltrimstr`/`rtrimstr`, `startswith`/`endswith`, `ascii_downcase`/`upcase`, `floor`/`ceil`/`sqrt`, `any`/`all`/`isempty`, `ascii`, `explode`/`implode`, user functions. |
 
 ## Misc extras (`--features extras`, 19 applets)
 

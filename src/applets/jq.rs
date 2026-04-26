@@ -387,6 +387,10 @@ enum F {
     ArrayCtor(Box<F>),
     ObjCtor(Vec<(String, F)>),
     Call(String, Vec<F>),
+    /// Binary arithmetic — op is one of "+", "-", "*", "/", "%". Each side
+    /// produces a stream; the cross-product of values is folded with the
+    /// operator (matches jq's spec).
+    Bin(String, Box<F>, Box<F>),
 }
 
 struct PFilter<'a> {
@@ -418,12 +422,12 @@ impl<'a> PFilter<'a> {
         Ok(l)
     }
     fn parse_comma(&mut self) -> Result<F, String> {
-        let mut parts = vec![self.parse_term()?];
+        let mut parts = vec![self.parse_addsub()?];
         loop {
             self.skip_ws();
             if self.i < self.s.len() && self.s[self.i] == b',' {
                 self.i += 1;
-                parts.push(self.parse_term()?);
+                parts.push(self.parse_addsub()?);
             } else {
                 break;
             }
@@ -433,6 +437,46 @@ impl<'a> PFilter<'a> {
         } else {
             Ok(F::Comma(parts))
         }
+    }
+    /// Left-associative `+` / `-`. Sits between comma and muldiv in jq's
+    /// precedence chain.
+    fn parse_addsub(&mut self) -> Result<F, String> {
+        let mut l = self.parse_muldiv()?;
+        loop {
+            self.skip_ws();
+            if self.i < self.s.len() && (self.s[self.i] == b'+' || self.s[self.i] == b'-') {
+                let op = (self.s[self.i] as char).to_string();
+                self.i += 1;
+                let r = self.parse_muldiv()?;
+                l = F::Bin(op, Box::new(l), Box::new(r));
+            } else {
+                break;
+            }
+        }
+        Ok(l)
+    }
+    /// Left-associative `*` / `/` / `%`. Highest precedence below unary.
+    fn parse_muldiv(&mut self) -> Result<F, String> {
+        let mut l = self.parse_term()?;
+        loop {
+            self.skip_ws();
+            if self.i < self.s.len()
+                && matches!(self.s[self.i], b'*' | b'/' | b'%')
+                // Don't consume `//` — that's the alternative operator,
+                // handled in a separate precedence level.
+                && !(self.s[self.i] == b'/'
+                    && self.i + 1 < self.s.len()
+                    && self.s[self.i + 1] == b'/')
+            {
+                let op = (self.s[self.i] as char).to_string();
+                self.i += 1;
+                let r = self.parse_term()?;
+                l = F::Bin(op, Box::new(l), Box::new(r));
+            } else {
+                break;
+            }
+        }
+        Ok(l)
     }
     fn parse_term(&mut self) -> Result<F, String> {
         self.skip_ws();
@@ -664,12 +708,12 @@ impl<'a> PFilter<'a> {
         Ok(node)
     }
     fn parse_pipe_no_comma(&mut self) -> Result<F, String> {
-        let mut l = self.parse_term()?;
+        let mut l = self.parse_addsub()?;
         loop {
             self.skip_ws();
             if self.i < self.s.len() && self.s[self.i] == b'|' {
                 self.i += 1;
-                let r = self.parse_term()?;
+                let r = self.parse_addsub()?;
                 l = F::Pipe(Box::new(l), Box::new(r));
             } else {
                 break;
@@ -860,6 +904,149 @@ fn apply(f: &F, v: &J) -> Result<Vec<J>, String> {
             Ok(vec![J::Obj(o)])
         }
         F::Call(name, args) => call_builtin(name, args, v),
+        F::Bin(op, l, r) => {
+            // Cross-product semantics: produce one result per (lv, rv) pair.
+            let lvs = apply(l, v)?;
+            let rvs = apply(r, v)?;
+            let mut out = Vec::with_capacity(lvs.len() * rvs.len().max(1));
+            for lv in &lvs {
+                for rv in &rvs {
+                    out.push(apply_binop(op, lv, rv)?);
+                }
+            }
+            Ok(out)
+        }
+    }
+}
+
+/// Type-aware binary arithmetic matching jq's spec:
+///
+/// - number op number = number arithmetic
+/// - string + string = concat
+/// - array + array  = concat
+/// - object + object = right-merge (keys in `b` overwrite `a`)
+/// - null + x or x + null = x (jq treats null as additive identity)
+/// - division/modulus by zero is an error
+///
+/// Anything else is an error with a jq-style message.
+fn apply_binop(op: &str, a: &J, b: &J) -> Result<J, String> {
+    match op {
+        "+" => match (a, b) {
+            (J::Null, x) | (x, J::Null) => Ok(x.clone()),
+            (J::Num(x), J::Num(y)) => Ok(J::Num(x + y)),
+            (J::Str(x), J::Str(y)) => Ok(J::Str(format!("{x}{y}"))),
+            (J::Arr(x), J::Arr(y)) => {
+                let mut z = x.clone();
+                z.extend_from_slice(y);
+                Ok(J::Arr(z))
+            }
+            (J::Obj(x), J::Obj(y)) => {
+                let mut z = x.clone();
+                for (k, v) in y {
+                    z.insert(k.clone(), v.clone());
+                }
+                Ok(J::Obj(z))
+            }
+            _ => Err(format!(
+                "{} ({}) and {} ({}) cannot be added",
+                type_of(a),
+                preview(a),
+                type_of(b),
+                preview(b)
+            )),
+        },
+        "-" => match (a, b) {
+            (J::Num(x), J::Num(y)) => Ok(J::Num(x - y)),
+            (J::Arr(x), J::Arr(y)) => {
+                // Array-minus-array: drop every value in b from a (jq semantics).
+                Ok(J::Arr(
+                    x.iter()
+                        .filter(|item| !y.iter().any(|drop| jeq(item, drop)))
+                        .cloned()
+                        .collect(),
+                ))
+            }
+            _ => Err(format!(
+                "{} ({}) and {} ({}) cannot be subtracted",
+                type_of(a),
+                preview(a),
+                type_of(b),
+                preview(b)
+            )),
+        },
+        "*" => match (a, b) {
+            (J::Num(x), J::Num(y)) => Ok(J::Num(x * y)),
+            (J::Null, _) | (_, J::Null) => Ok(J::Null),
+            (J::Str(x), J::Str(y)) => {
+                // jq's string-times-string is "split a by b then keep
+                // non-empty parts" — niche but documented. We stop at
+                // number*number for the common case; widen later if needed.
+                let _ = (x, y);
+                Err("string * string is not implemented yet".to_string())
+            }
+            _ => Err(format!(
+                "{} ({}) and {} ({}) cannot be multiplied",
+                type_of(a),
+                preview(a),
+                type_of(b),
+                preview(b)
+            )),
+        },
+        "/" => match (a, b) {
+            (J::Num(_), J::Num(y)) if *y == 0.0 => Err(format!(
+                "{} ({}) and {} ({}) cannot be divided because the divisor is zero",
+                type_of(a),
+                preview(a),
+                type_of(b),
+                preview(b)
+            )),
+            (J::Num(x), J::Num(y)) => Ok(J::Num(x / y)),
+            (J::Str(x), J::Str(y)) => {
+                if y.is_empty() {
+                    return Err("string / empty string is not allowed".to_string());
+                }
+                Ok(J::Arr(
+                    x.split(y.as_str()).map(|s| J::Str(s.to_string())).collect(),
+                ))
+            }
+            _ => Err(format!(
+                "{} ({}) and {} ({}) cannot be divided",
+                type_of(a),
+                preview(a),
+                type_of(b),
+                preview(b)
+            )),
+        },
+        "%" => match (a, b) {
+            (J::Num(_), J::Num(y)) if *y == 0.0 => {
+                Err("number and number cannot be modulo'd because the divisor is zero".to_string())
+            }
+            (J::Num(x), J::Num(y)) => {
+                // jq's % truncates both sides to int, matching C-style %.
+                let xi = *x as i64;
+                let yi = *y as i64;
+                Ok(J::Num((xi % yi) as f64))
+            }
+            _ => Err(format!(
+                "{} ({}) and {} ({}) cannot be modulo'd",
+                type_of(a),
+                preview(a),
+                type_of(b),
+                preview(b)
+            )),
+        },
+        _ => Err(format!("unknown operator: {op}")),
+    }
+}
+
+/// Compact one-line preview of a value, used in arithmetic-error messages
+/// to mirror jq's wording. Long values get truncated.
+fn preview(v: &J) -> String {
+    let s = json_to_string(v, false, true, false, 0);
+    if s.len() > 40 {
+        format!("{}...", &s[..40])
+    } else {
+        s
     }
 }
 

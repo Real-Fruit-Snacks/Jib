@@ -240,6 +240,33 @@ def load_manifest() -> list[Case]:
             ["jq", "-c", "map(if . > 2 then . * 10 else . end)"],
             input=b"[1,2,3,4,5]\n",
         ),
+        # String built-ins.
+        Case("jq_split", ["jq", "-c", 'split(",")'], input=b'"a,b,c"\n'),
+        Case(
+            "jq_split_join_roundtrip",
+            ["jq", 'split(",") | join(";")'],
+            input=b'"a,b,c"\n',
+        ),
+        Case("jq_join_strings", ["jq", 'join("-")'], input=b'["a","b","c"]\n'),
+        Case(
+            "jq_endswith_select",
+            ["jq", "-c", "[.[] | select(endswith(\".txt\"))]"],
+            input=b'["foo.txt", "bar.log", "baz.txt"]\n',
+        ),
+        Case(
+            "jq_startswith_true",
+            ["jq", 'startswith("pre")'],
+            input=b'"prefix-data"\n',
+        ),
+        Case(
+            "jq_startswith_false",
+            ["jq", 'startswith("xyz")'],
+            input=b'"prefix-data"\n',
+        ),
+        Case("jq_ltrimstr", ["jq", 'ltrimstr("foo-")'], input=b'"foo-bar"\n'),
+        Case("jq_rtrimstr", ["jq", 'rtrimstr(".log")'], input=b'"app.log"\n'),
+        Case("jq_ascii_downcase", ["jq", "ascii_downcase"], input=b'"Hello World"\n'),
+        Case("jq_ascii_upcase", ["jq", "ascii_upcase"], input=b'"hello"\n'),
     ]
 
     # HTTP/HTTPS — only enabled if HARNESS_NETWORK=1 to avoid flaky CI.

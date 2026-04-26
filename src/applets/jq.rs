@@ -9,9 +9,13 @@
 //! - Iterate `.[]` (over arrays and objects)
 //! - Pipe `|`, comma `,`, parens `( … )`
 //! - Constructors: array `[ … ]`, object `{a: …, b: …}`
+//! - Arithmetic `+ - * / %`, comparisons `== != < <= > >=`, alternative
+//!   `//`, conditionals `if/then/elif/else/end`.
 //! - Built-ins: `length`, `keys`, `values`, `type`, `has(k)`, `select(f)`,
 //!   `map(f)`, `not`, `empty`, `tostring`, `tonumber`, `add`, `min`, `max`,
-//!   `first`, `last`, `reverse`, `sort`, `unique`.
+//!   `first`, `last`, `reverse`, `sort`, `unique`,
+//!   `split(s)`, `join(s)`, `startswith(s)`, `endswith(s)`,
+//!   `ltrimstr(s)`, `rtrimstr(s)`, `ascii_downcase`, `ascii_upcase`.
 //! - Numeric/string literals.
 //!
 //! Flags: `-r` raw output, `-c` compact (no indent), `-S` sort keys,
@@ -1454,7 +1458,148 @@ fn call_builtin(name: &str, args: &[F], v: &J) -> Result<Vec<J>, String> {
             }
             _ => Err("unique: expected array".into()),
         },
+        "split" => {
+            if args.len() != 1 {
+                return Err("split: requires 1 arg".into());
+            }
+            let sep = first_string_arg("split", &args[0], v)?;
+            match v {
+                J::Str(s) => {
+                    if sep.is_empty() {
+                        // Match jq: empty separator splits into individual chars.
+                        Ok(vec![J::Arr(
+                            s.chars().map(|c| J::Str(c.to_string())).collect(),
+                        )])
+                    } else {
+                        Ok(vec![J::Arr(
+                            s.split(sep.as_str())
+                                .map(|p| J::Str(p.to_string()))
+                                .collect(),
+                        )])
+                    }
+                }
+                _ => Err(format!(
+                    "split input and separator must be strings (got {})",
+                    type_of(v)
+                )),
+            }
+        }
+        "join" => {
+            if args.len() != 1 {
+                return Err("join: requires 1 arg".into());
+            }
+            let sep = first_string_arg("join", &args[0], v)?;
+            match v {
+                J::Arr(a) => {
+                    let mut parts: Vec<String> = Vec::with_capacity(a.len());
+                    for x in a {
+                        match x {
+                            J::Str(s) => parts.push(s.clone()),
+                            J::Null => parts.push(String::new()),
+                            other => parts.push(json_to_string(other, false, true, false, 0)),
+                        }
+                    }
+                    Ok(vec![J::Str(parts.join(sep.as_str()))])
+                }
+                _ => Err(format!("join: expected array, got {}", type_of(v))),
+            }
+        }
+        "startswith" => {
+            if args.len() != 1 {
+                return Err("startswith: requires 1 arg".into());
+            }
+            let needle = first_string_arg("startswith", &args[0], v)?;
+            match v {
+                J::Str(s) => Ok(vec![J::Bool(s.starts_with(needle.as_str()))]),
+                _ => Err(format!(
+                    "startswith() requires string inputs, got {}",
+                    type_of(v)
+                )),
+            }
+        }
+        "endswith" => {
+            if args.len() != 1 {
+                return Err("endswith: requires 1 arg".into());
+            }
+            let needle = first_string_arg("endswith", &args[0], v)?;
+            match v {
+                J::Str(s) => Ok(vec![J::Bool(s.ends_with(needle.as_str()))]),
+                _ => Err(format!(
+                    "endswith() requires string inputs, got {}",
+                    type_of(v)
+                )),
+            }
+        }
+        "ltrimstr" => {
+            if args.len() != 1 {
+                return Err("ltrimstr: requires 1 arg".into());
+            }
+            let prefix = first_string_arg("ltrimstr", &args[0], v)?;
+            match v {
+                J::Str(s) => Ok(vec![J::Str(
+                    s.strip_prefix(prefix.as_str()).unwrap_or(s).to_string(),
+                )]),
+                // jq passes non-strings through unchanged for ltrim/rtrim.
+                _ => Ok(vec![v.clone()]),
+            }
+        }
+        "rtrimstr" => {
+            if args.len() != 1 {
+                return Err("rtrimstr: requires 1 arg".into());
+            }
+            let suffix = first_string_arg("rtrimstr", &args[0], v)?;
+            match v {
+                J::Str(s) => Ok(vec![J::Str(
+                    s.strip_suffix(suffix.as_str()).unwrap_or(s).to_string(),
+                )]),
+                _ => Ok(vec![v.clone()]),
+            }
+        }
+        "ascii_downcase" => match v {
+            J::Str(s) => Ok(vec![J::Str(
+                s.chars()
+                    .map(|c| {
+                        if c.is_ascii() {
+                            c.to_ascii_lowercase()
+                        } else {
+                            c
+                        }
+                    })
+                    .collect(),
+            )]),
+            _ => Err(format!(
+                "ascii_downcase: expected string, got {}",
+                type_of(v)
+            )),
+        },
+        "ascii_upcase" => match v {
+            J::Str(s) => Ok(vec![J::Str(
+                s.chars()
+                    .map(|c| {
+                        if c.is_ascii() {
+                            c.to_ascii_uppercase()
+                        } else {
+                            c
+                        }
+                    })
+                    .collect(),
+            )]),
+            _ => Err(format!("ascii_upcase: expected string, got {}", type_of(v))),
+        },
         other => Err(format!("unknown function: {other}")),
+    }
+}
+
+/// Evaluate `arg` against `v`, take the first value, and require it to be
+/// a string. Used by string built-ins that take exactly one string arg.
+fn first_string_arg(name: &str, arg: &F, v: &J) -> Result<String, String> {
+    let av = apply(arg, v)?.into_iter().next().unwrap_or(J::Null);
+    match av {
+        J::Str(s) => Ok(s),
+        other => Err(format!(
+            "{name}: argument must be a string, got {}",
+            type_of(&other)
+        )),
     }
 }
 

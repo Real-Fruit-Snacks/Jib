@@ -11,3 +11,4 @@ Cargo.lock.bak
 # Parity harness state
 /tests/parity/mainsail-python/
 /tests/parity/_workspace/
+.issues/

@@ -48,7 +48,7 @@ slim = ["dep:regex"]
 archives = ["dep:flate2", "dep:tar", "dep:zip"]
 hashing = ["dep:md-5", "dep:sha1", "dep:sha2"]
 disk = []
-network = []
+network = ["dep:rustls", "dep:webpki-roots"]
 json = []
 extras = ["dep:similar"]
 
@@ -62,6 +62,8 @@ flate2 = { version = "1", optional = true, default-features = false, features = 
 tar = { version = "0.4", optional = true }
 zip = { version = "5", optional = true, default-features = false, features = ["deflate", "deflate-flate2"] }
 similar = { version = "2", optional = true }
+rustls = { version = "0.23", optional = true, default-features = false, features = ["std", "ring", "tls12"] }
+webpki-roots = { version = "1", optional = true }
 
 [profile.release]
 opt-level = "z"      # optimize for size; switch to 3 if perf matters more

@@ -1,20 +1,26 @@
-//! `http` — minimal HTTP/1.1 client (HTTP only; HTTPS is a TODO once we
-//! pull in `rustls`).
+//! `http` — minimal HTTP/1.1 client with HTTPS via `rustls`.
 //!
 //! Mirrors the Python applet's surface where practical:
 //! `http [-X METHOD] [-H KEY:VALUE] [-d BODY] [-i] [-I] [-o FILE] [-f]
 //! [--timeout N] [--json BODY] URL`.
+//!
+//! HTTPS uses `rustls` with the bundled `webpki-roots` trust store —
+//! no system trust dep, deterministic across platforms.
 
 use std::io::{Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
+use std::sync::Arc;
 use std::time::Duration;
+
+use rustls::pki_types::ServerName;
+use rustls::{ClientConfig, ClientConnection, RootCertStore, StreamOwned};
 
 use crate::common::err;
 use crate::registry::Applet;
 
 pub const APPLET: Applet = Applet {
     name: "http",
-    help: "minimal HTTP/1.1 client (HTTP only)",
+    help: "HTTP/1.1 client with HTTPS via rustls",
     aliases: &[],
     main,
 };
@@ -48,24 +54,42 @@ fn parse_url(u: &str) -> Option<Url> {
     })
 }
 
-fn send_request(
+/// Build the rustls config once per process. We use the Mozilla CA bundle
+/// (`webpki-roots`) instead of the system trust store so HTTPS works the
+/// same on Linux/macOS/Windows without OS-specific plumbing.
+fn tls_config() -> Arc<ClientConfig> {
+    use std::sync::OnceLock;
+    static CONFIG: OnceLock<Arc<ClientConfig>> = OnceLock::new();
+    CONFIG
+        .get_or_init(|| {
+            let mut roots = RootCertStore::empty();
+            roots.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
+            let config = ClientConfig::builder()
+                .with_root_certificates(roots)
+                .with_no_client_auth();
+            Arc::new(config)
+        })
+        .clone()
+}
+
+/// Format the HTTP/1.1 request line + headers + body into one buffer ready
+/// to ship over either a plain TCP stream or a TLS stream.
+fn build_request(
     url: &Url,
     method: &str,
     headers: &[(String, String)],
     body: Option<&[u8]>,
-    timeout: Duration,
-) -> std::io::Result<(u16, Vec<(String, String)>, Vec<u8>)> {
-    let sa = (url.host.as_str(), url.port)
-        .to_socket_addrs()?
-        .next()
-        .ok_or_else(|| std::io::Error::other("resolve failed"))?;
-    let mut sock = TcpStream::connect_timeout(&sa, timeout)?;
-    sock.set_read_timeout(Some(timeout))?;
-    sock.set_write_timeout(Some(timeout))?;
-
+) -> Vec<u8> {
     let mut req = String::new();
     req.push_str(&format!("{method} {} HTTP/1.1\r\n", url.path));
-    req.push_str(&format!("Host: {}:{}\r\n", url.host, url.port));
+    // Omit the explicit port for default ports — some origins (notably
+    // GitHub/Cloudflare) reject the explicit form on TLS.
+    let default_port = if url.scheme == "https" { 443 } else { 80 };
+    if url.port == default_port {
+        req.push_str(&format!("Host: {}\r\n", url.host));
+    } else {
+        req.push_str(&format!("Host: {}:{}\r\n", url.host, url.port));
+    }
     req.push_str("Connection: close\r\n");
     let mut have_ct = false;
     let mut have_cl = false;
@@ -87,13 +111,16 @@ fn send_request(
         }
     }
     req.push_str("\r\n");
-    sock.write_all(req.as_bytes())?;
+    let mut buf = req.into_bytes();
     if let Some(b) = body {
-        sock.write_all(b)?;
+        buf.extend_from_slice(b);
     }
+    buf
+}
 
-    let mut raw = Vec::new();
-    sock.read_to_end(&mut raw)?;
+/// Split a raw HTTP/1.1 response into `(status, headers, body)`. Used by
+/// both the TCP and TLS paths.
+fn parse_response(raw: &[u8]) -> std::io::Result<(u16, Vec<(String, String)>, Vec<u8>)> {
     let split_at = raw
         .windows(4)
         .position(|w| w == b"\r\n\r\n")
@@ -115,6 +142,38 @@ fn send_request(
         }
     }
     Ok((status, hdrs, body))
+}
+
+fn send_request(
+    url: &Url,
+    method: &str,
+    headers: &[(String, String)],
+    body: Option<&[u8]>,
+    timeout: Duration,
+) -> std::io::Result<(u16, Vec<(String, String)>, Vec<u8>)> {
+    let sa = (url.host.as_str(), url.port)
+        .to_socket_addrs()?
+        .next()
+        .ok_or_else(|| std::io::Error::other("resolve failed"))?;
+    let mut sock = TcpStream::connect_timeout(&sa, timeout)?;
+    sock.set_read_timeout(Some(timeout))?;
+    sock.set_write_timeout(Some(timeout))?;
+    let req = build_request(url, method, headers, body);
+
+    let mut raw = Vec::new();
+    if url.scheme == "https" {
+        let server_name = ServerName::try_from(url.host.clone())
+            .map_err(|e| std::io::Error::other(format!("invalid server name: {e}")))?;
+        let conn = ClientConnection::new(tls_config(), server_name)
+            .map_err(|e| std::io::Error::other(format!("tls setup: {e}")))?;
+        let mut tls = StreamOwned::new(conn, sock);
+        tls.write_all(&req)?;
+        tls.read_to_end(&mut raw)?;
+    } else {
+        sock.write_all(&req)?;
+        sock.read_to_end(&mut raw)?;
+    }
+    parse_response(&raw)
 }
 
 fn main(argv: &[String]) -> i32 {
@@ -216,8 +275,8 @@ fn main(argv: &[String]) -> i32 {
             return 2;
         }
     };
-    if url.scheme == "https" {
-        err("http", "HTTPS not supported in this build (TODO: rustls)");
+    if url.scheme != "http" && url.scheme != "https" {
+        err("http", &format!("unsupported scheme: {}", url.scheme));
         return 2;
     }
     let to = Duration::from_secs(timeout_secs);

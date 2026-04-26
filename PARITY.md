@@ -77,7 +77,7 @@ Python implementation.
 ## Network (`--features network`, 3 applets)
 
 | nc         | 🟡 | TCP only (UDP rejected); client / -l listen / -z scan |
-| http       | 🟡 | HTTP/1.1 client; **HTTPS not yet supported** (TODO: `rustls`) |
+| http       | ✅ | HTTP/1.1 client + HTTPS via `rustls` and the `webpki-roots` Mozilla bundle |
 | dig        | ✅ | A/AAAA/MX/TXT/CNAME/NS/SOA/PTR/ANY; +short, -t, -x, --timeout, @server |
 
 ## JSON (`--features json`, 1 applet)

@@ -115,7 +115,7 @@ Each applet implements the common POSIX flags and edge cases.
 - `sed` — `s///`, `d`, `p`, `q`, `=`, `y///`, addresses, ranges, negation, `-i` in-place edit, BRE + ERE
 - `awk` — BEGIN/END, `/regex/` and expression patterns, range patterns, `print`/`printf`, full control flow, associative arrays, the standard built-ins (`length`, `substr`, `index`, `split`, `sub`, `gsub`, `match`, `toupper`, `tolower`, `sprintf`, `int`)
 - `jq` — practical subset: pipes, comma, object & array constructors, slices and iterators, **20+ built-in functions** (`select`, `map`, `keys`, `values`, `length`, `type`, `sort`, `unique`, `add`, `min`, `max`, …), raw output (`-r`), compact (`-c`), slurp (`-s`)
-- `http` — `GET`/`POST`/`PUT`/`DELETE`/`HEAD`, custom headers, body literal or `@file`, `--json` shortcut, redirect handling, `-f` for HTTP errors. _HTTP only — HTTPS via `rustls` is on the roadmap._
+- `http` — `GET`/`POST`/`PUT`/`DELETE`/`HEAD`, custom headers, body literal or `@file`, `--json` shortcut, `-f` for HTTP errors. **HTTPS** via `rustls` with the bundled Mozilla CA roots (`webpki-roots`) — works the same on Linux, macOS, and Windows.
 - `dig` — direct UDP DNS queries: A, AAAA, MX, TXT, CNAME, NS, SOA, PTR; `+short`; reverse lookups via `-x`
 - `sort` — `-k` key fields, `-t` custom separator, `-o` output file, numeric/reverse/unique
 - `tar` — create/extract/list with optional gzip (`-z`); accepts traditional (`cvfz`) and dashed (`-cvfz`) flag forms
@@ -159,7 +159,7 @@ python tests/parity/run.py
 | File ops    | `ls` `cp` `mv` `rm` `mkdir` `touch` `find` `chmod` `ln` `stat` `truncate` `mktemp` `dd` |
 | Text        | `cat` `tac` `rev` `grep` `head` `tail` `wc` `nl` `sort` `uniq` `cut` `paste` `tr` `sed` `awk` `tee` `xargs` `printf` `echo` `expand` `unexpand` `split` `cmp` `comm` `diff` `join` `fmt` `od` `hexdump` |
 | **JSON**    | **`jq`** _(filters, fields, iteration, constructors, 20+ built-ins; arithmetic + comparison + `if/then/else` are on the roadmap)_ |
-| **Network** | **`http`** _(HTTP/1.1 client; HTTPS pending `rustls`)_ • **`dig`** _(UDP DNS, hand-rolled wire format)_ • **`nc`** _(TCP netcat: connect, listen, port-scan)_ |
+| **Network** | **`http`** _(HTTP/1.1 + HTTPS via rustls; GET/POST/PUT/DELETE/HEAD)_ • **`dig`** _(UDP DNS, hand-rolled wire format)_ • **`nc`** _(TCP netcat: connect, listen, port-scan)_ |
 | Hashing     | `md5sum` `sha1sum` `sha256sum` `sha512sum` |
 | Archives    | `tar` `gzip` `gunzip` `zip` `unzip` |
 | Filesystem  | `du` `df` |
@@ -207,7 +207,7 @@ Adding an applet means dropping a file under `src/applets/<name>.rs` exposing `p
 | `hashing` | yes     | 4       | `md5sum`/`sha1sum`/`sha256sum`/`sha512sum` (`md-5`, `sha1`, `sha2`) |
 | `archives`| yes     | 5       | `gzip`/`gunzip`/`tar`/`zip`/`unzip` (`flate2`, `tar`, `zip`) |
 | `disk`    | yes     | 2       | `du`/`df` |
-| `network` | yes     | 3       | `nc`/`http`/`dig` (HTTPS in `http` is pending) |
+| `network` | yes     | 3       | `nc`/`http`/`dig` (HTTPS via `rustls` + `webpki-roots`) |
 | `json`    | yes     | 1       | `jq` subset (see PARITY.md) |
 | `full`    | yes     | 73      | All groups |
 

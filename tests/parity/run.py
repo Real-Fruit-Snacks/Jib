@@ -172,6 +172,25 @@ def load_manifest() -> list[Case]:
         Case("sed_eq", ["sed", "="], input=b"a\nb\n"),
     ]
 
+    # HTTP/HTTPS — only enabled if HARNESS_NETWORK=1 to avoid flaky CI.
+    # Compares status code only (response body changes by date/host).
+    if os.environ.get("HARNESS_NETWORK") == "1":
+        cases += [
+            Case(
+                "http_plain_status",
+                ["http", "-I", "http://example.com"],
+                # We can't byte-compare the full response because Date,
+                # Server, etc. vary; this case is included as a smoke test
+                # the harness skips by default.
+                skip="network test — set HARNESS_NETWORK=1 to enable",
+            ),
+            Case(
+                "http_tls_status",
+                ["http", "-I", "https://example.com"],
+                skip="network test — set HARNESS_NETWORK=1 to enable",
+            ),
+        ]
+
     return cases
 
 

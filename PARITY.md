@@ -21,7 +21,7 @@ Python implementation.
 | chmod      | ✅ | symbolic + octal modes; Windows toggles read-only only |
 | cp         | ✅ | -r/-p/-a/-v/-i/-n/-u |
 | cut        | ✅ | |
-| date       | 🟡 | full strftime; no full TZ DB — `+%z` always emits the configured offset |
+| date       | ✅ | full strftime via `chrono`; `%z` reflects the parsed input offset; local timezone resolved via `iana-time-zone` |
 | dirname    | ✅ | |
 | echo       | ✅ | |
 | env        | ✅ | |
@@ -93,7 +93,7 @@ Python implementation.
 - **Reference (mainsail v0.2.1):** 73 applets
 - **`jib`:** 78 applets (full feature set)
 - **`jib --features slim`:** 34 applets, ~545 KB release binary on Windows x64
-- **Parity harness cases passing:** 116/116 across the basic / cut / sort / uniq / cat / printf / date / tr / grep / sed / awk / jq surfaces
+- **Parity harness cases passing:** 126/126 across the basic / cut / sort / uniq / cat / printf / date / tr / grep / sed / awk / jq / base64 / fold / column surfaces
 
 The known 🟡 gaps are documented above and tracked in the upstream
 `CHANGELOG.md` for follow-up versions. The jq surface now covers

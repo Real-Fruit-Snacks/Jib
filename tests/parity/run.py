@@ -130,6 +130,15 @@ def load_manifest() -> list[Case]:
             "date_format_a_b_d",
             ["date", "-u", "-d", "2025-12-25T00:00:00Z", "+%a %b %d"],
         ),
+        # %z reads the actual input offset (was always +0000 pre-chrono).
+        Case(
+            "date_z_from_offset_input",
+            ["date", "-d", "2025-01-15T10:30:00-05:00", "+%z"],
+        ),
+        Case(
+            "date_z_from_plus_offset",
+            ["date", "-d", "2025-06-01T08:00:00+09:00", "+%z"],
+        ),
     ]
 
     # M3: awk (subset that we expect to match Python parity).

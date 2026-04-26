@@ -18,7 +18,7 @@
   everything.
 - Behavior parity is verified by `python tests/parity/run.py`, which
   diffs stdout/rc against the upstream Python reference cloned to
-  `tests/parity/mainsail-python/`. 116/116 cases match as of last run.
+  `tests/parity/mainsail-python/`. 126/126 cases match as of last run.
 
 ## Repository conventions
 
@@ -40,7 +40,5 @@
 - `awk`: no user-defined functions, no `getline`, regex `FS`, or
   SUBSEP-based multidim arrays.
 - `uname -r/-v/-p` returns `"unknown"` on Windows (needs registry/WMI).
-- `date %z`: no full TZ DB; offset is always whatever `utc_offset_secs`
-  produces (currently 0).
 - `id`/`groups`: best-effort without libc; IDs are zeros and the group
   is derived from the user name.

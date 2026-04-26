@@ -62,7 +62,10 @@ fn main(argv: &[String]) -> i32 {
             "-u" | "-c" | "-t" => {
                 i += 1;
             }
-            s if s.starts_with('-') && s.len() > 1 && s[1..].chars().all(|c| c.is_ascii_digit()) => {
+            s if s.starts_with('-')
+                && s.len() > 1
+                && s[1..].chars().all(|c| c.is_ascii_digit()) =>
+            {
                 width = s[1..].parse().unwrap_or(75);
                 i += 1;
             }
@@ -106,9 +109,18 @@ fn main(argv: &[String]) -> i32 {
                         // Print each original line, but split if too long.
                         // (Approximation: just emit as paragraph reflow at
                         // current width.)
-                        flow(&buf.iter().flat_map(|l| l.split_whitespace().map(String::from)).collect::<Vec<_>>(), width, &mut out);
+                        flow(
+                            &buf.iter()
+                                .flat_map(|l| l.split_whitespace().map(String::from))
+                                .collect::<Vec<_>>(),
+                            width,
+                            &mut out,
+                        );
                     } else {
-                        let words: Vec<String> = buf.iter().flat_map(|l| l.split_whitespace().map(String::from)).collect();
+                        let words: Vec<String> = buf
+                            .iter()
+                            .flat_map(|l| l.split_whitespace().map(String::from))
+                            .collect();
                         flow(&words, width, &mut out);
                     }
                     buf.clear();
@@ -119,7 +131,10 @@ fn main(argv: &[String]) -> i32 {
             }
         }
         if !buf.is_empty() {
-            let words: Vec<String> = buf.iter().flat_map(|l| l.split_whitespace().map(String::from)).collect();
+            let words: Vec<String> = buf
+                .iter()
+                .flat_map(|l| l.split_whitespace().map(String::from))
+                .collect();
             flow(&words, width, &mut out);
         }
     }

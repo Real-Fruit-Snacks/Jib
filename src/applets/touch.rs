@@ -97,8 +97,8 @@ fn parse_d(s: &str) -> Option<SystemTime> {
                 let sign = if off.starts_with('+') { 1 } else { -1 };
                 let off = &off[1..];
                 let (oh, om) = off.split_once(':').unwrap_or((off, "00"));
-                let off_secs = sign
-                    * (oh.parse::<i64>().ok()? * 3600 + om.parse::<i64>().ok()? * 60);
+                let off_secs =
+                    sign * (oh.parse::<i64>().ok()? * 3600 + om.parse::<i64>().ok()? * 60);
                 (t, Some(off_secs))
             } else {
                 (rest, None)
@@ -133,7 +133,13 @@ fn current_year() -> i64 {
     let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
     let doe = z - era * 146_097;
     let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
-    era * 400 + yoe + if (doe - (365 * yoe + yoe / 4 - yoe / 100)) >= 306 { 1 } else { 0 }
+    era * 400
+        + yoe
+        + if (doe - (365 * yoe + yoe / 4 - yoe / 100)) >= 306 {
+            1
+        } else {
+            0
+        }
 }
 
 /// Best-effort local offset (seconds east of UTC). std doesn't expose
@@ -269,14 +275,25 @@ fn main(argv: &[String]) -> i32 {
             }
         };
         let (a_src, m_src) = if let Some(rm_) = ref_mtime {
-            (ref_atime.unwrap_or_else(|| st.accessed().unwrap_or(now)), rm_)
+            (
+                ref_atime.unwrap_or_else(|| st.accessed().unwrap_or(now)),
+                rm_,
+            )
         } else if let Some(t) = target_time {
             (t, t)
         } else {
             (now, now)
         };
-        let new_atime = if atime_only || !mtime_only { a_src } else { st.accessed().unwrap_or(now) };
-        let new_mtime = if mtime_only || !atime_only { m_src } else { st.modified().unwrap_or(now) };
+        let new_atime = if atime_only || !mtime_only {
+            a_src
+        } else {
+            st.accessed().unwrap_or(now)
+        };
+        let new_mtime = if mtime_only || !atime_only {
+            m_src
+        } else {
+            st.modified().unwrap_or(now)
+        };
         if let Err(e) = set_times(p, new_atime, new_mtime) {
             err_path("touch", f, &e);
             rc = 1;

@@ -79,7 +79,13 @@ fn main(argv: &[String]) -> i32 {
     } else {
         raw_files
             .iter()
-            .map(|f| if f == "-" { Source::Stdin } else { Source::File(f.clone()) })
+            .map(|f| {
+                if f == "-" {
+                    Source::Stdin
+                } else {
+                    Source::File(f.clone())
+                }
+            })
             .collect()
     };
     let multi = files.len() > 1;

@@ -21,7 +21,11 @@ pub const APPLET: Applet = Applet {
 fn split_template(tmpl: &str) -> (PathBuf, String, String, usize) {
     let p = std::path::Path::new(tmpl);
     let parent = p.parent().map(|q| q.to_path_buf()).unwrap_or_default();
-    let base = p.file_name().and_then(|s| s.to_str()).unwrap_or(tmpl).to_string();
+    let base = p
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or(tmpl)
+        .to_string();
     // Find longest run of trailing X's anywhere in basename.
     let bytes = base.as_bytes();
     let mut end = bytes.len();

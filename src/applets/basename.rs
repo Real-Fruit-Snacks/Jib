@@ -21,7 +21,9 @@ fn basename(s: &str) -> &str {
         // "/"  -> "/"
         // "\\" -> "\\"
         // ""   -> ""
-        return s.get(0..s.chars().next().map_or(0, char::len_utf8)).unwrap_or("");
+        return s
+            .get(0..s.chars().next().map_or(0, char::len_utf8))
+            .unwrap_or("");
     }
     match stripped.rfind(|c| c == '/' || c == '\\') {
         Some(i) => &stripped[i + 1..],

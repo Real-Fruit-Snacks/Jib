@@ -65,7 +65,10 @@ fn main(argv: &[String]) -> i32 {
             break;
         }
         let body = &a[1..];
-        if body.chars().all(|c| matches!(c, 'c' | 'x' | 't' | 'z' | 'v' | 'f')) {
+        if body
+            .chars()
+            .all(|c| matches!(c, 'c' | 'x' | 't' | 'z' | 'v' | 'f'))
+        {
             let (c, x, t, z, v, needs_f) = parse_short_options(body);
             create |= c;
             extract |= x;

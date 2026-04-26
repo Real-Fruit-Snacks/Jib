@@ -13,7 +13,9 @@ pub const APPLET: Applet = Applet {
 };
 
 fn shell_quote(s: &str) -> String {
-    if s.chars().all(|c| c.is_ascii_alphanumeric() || "/.-_=:".contains(c)) {
+    if s.chars()
+        .all(|c| c.is_ascii_alphanumeric() || "/.-_=:".contains(c))
+    {
         return s.to_string();
     }
     let escaped = s.replace('\'', r#"'\''"#);

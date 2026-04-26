@@ -65,8 +65,17 @@ fn apply_format(fmt: &str, v: f64) -> String {
             while i < bytes.len()
                 && !matches!(
                     bytes[i],
-                    b'd' | b'i' | b'o' | b'u' | b'x' | b'X'
-                        | b'e' | b'E' | b'f' | b'g' | b'G' | b's'
+                    b'd' | b'i'
+                        | b'o'
+                        | b'u'
+                        | b'x'
+                        | b'X'
+                        | b'e'
+                        | b'E'
+                        | b'f'
+                        | b'g'
+                        | b'G'
+                        | b's'
                 )
             {
                 i += 1;
@@ -171,7 +180,11 @@ fn format_one(spec: &str, conv: char, v: f64) -> String {
                 Some(p) if p > 0 => format!("{:.*}", p, v),
                 _ => format!("{}", v),
             };
-            if conv == 'G' { body.to_uppercase() } else { body }
+            if conv == 'G' {
+                body.to_uppercase()
+            } else {
+                body
+            }
         }
         's' => format!("{v}"),
         _ => format!("{v}"),
@@ -252,7 +265,10 @@ fn main(argv: &[String]) -> i32 {
         2 => (nums[0].as_str(), "1", nums[1].as_str()),
         3 => (nums[0].as_str(), nums[1].as_str(), nums[2].as_str()),
         _ => {
-            err("seq", "usage: seq [-s SEP] [-f FMT] [-w] [FIRST [INCR]] LAST");
+            err(
+                "seq",
+                "usage: seq [-s SEP] [-f FMT] [-w] [FIRST [INCR]] LAST",
+            );
             return 2;
         }
     };

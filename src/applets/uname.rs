@@ -91,7 +91,9 @@ fn main(argv: &[String]) -> i32 {
             "--operating-system" => add_unique(&mut wanted, 'o'),
             s if s.starts_with('-') && s.len() > 1 => {
                 let body = &s[1..];
-                if !body.chars().all(|c| matches!(c, 's' | 'n' | 'r' | 'v' | 'm' | 'p' | 'i' | 'o' | 'a'))
+                if !body
+                    .chars()
+                    .all(|c| matches!(c, 's' | 'n' | 'r' | 'v' | 'm' | 'p' | 'i' | 'o' | 'a'))
                 {
                     err("uname", &format!("invalid option: {s}"));
                     return 2;

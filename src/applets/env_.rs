@@ -40,11 +40,7 @@ fn main(argv: &[String]) -> i32 {
                 unsets.push(args[i + 1].clone());
                 i += 2;
             }
-            s if s.starts_with('-')
-                && s != "-"
-                && s.len() > 1
-                && !s.starts_with("--") =>
-            {
+            s if s.starts_with('-') && s != "-" && s.len() > 1 && !s.starts_with("--") => {
                 for ch in s[1..].chars() {
                     if ch == 'i' {
                         ignore_env = true;

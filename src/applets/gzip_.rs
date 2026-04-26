@@ -135,7 +135,10 @@ fn compress_main(files: &[String], to_stdout: bool, keep: bool, force: bool, lev
         } else {
             let out = format!("{f}.gz");
             if !force && PathBuf::from(&out).exists() {
-                err("gzip", &format!("{out} already exists; use -f to overwrite"));
+                err(
+                    "gzip",
+                    &format!("{out} already exists; use -f to overwrite"),
+                );
                 rc = 1;
                 continue;
             }
@@ -198,7 +201,10 @@ fn decompress_main(files: &[String], to_stdout: bool, keep: bool, force: bool) -
             continue;
         };
         if !force && PathBuf::from(&out).exists() {
-            err("gunzip", &format!("{out} already exists; use -f to overwrite"));
+            err(
+                "gunzip",
+                &format!("{out} already exists; use -f to overwrite"),
+            );
             rc = 1;
             continue;
         }
@@ -221,4 +227,3 @@ fn decompress_main(files: &[String], to_stdout: bool, keep: bool, force: bool) -
     }
     rc
 }
-

@@ -34,7 +34,15 @@ fn human(n: u64) -> String {
     n.to_string()
 }
 
-fn walk(path: &Path, all: bool, human_fmt: bool, depth: usize, max_depth: usize, only_summary: bool, out: &mut Vec<(u64, String)>) -> u64 {
+fn walk(
+    path: &Path,
+    all: bool,
+    human_fmt: bool,
+    depth: usize,
+    max_depth: usize,
+    only_summary: bool,
+    out: &mut Vec<(u64, String)>,
+) -> u64 {
     let meta = match std::fs::symlink_metadata(path) {
         Ok(m) => m,
         Err(e) => {
@@ -55,7 +63,15 @@ fn walk(path: &Path, all: bool, human_fmt: bool, depth: usize, max_depth: usize,
     let mut total = 0u64;
     if let Ok(d) = std::fs::read_dir(path) {
         for entry in d.flatten() {
-            total += walk(&entry.path(), all, human_fmt, depth + 1, max_depth, only_summary, out);
+            total += walk(
+                &entry.path(),
+                all,
+                human_fmt,
+                depth + 1,
+                max_depth,
+                only_summary,
+                out,
+            );
         }
     }
     if !only_summary || depth == 0 {
@@ -101,10 +117,22 @@ fn main(argv: &[String]) -> i32 {
     let mut grand_total = 0u64;
     for p in &paths {
         let mut out: Vec<(u64, String)> = Vec::new();
-        let total = walk(Path::new(p), all, human_fmt, 0, usize::MAX, summary, &mut out);
+        let total = walk(
+            Path::new(p),
+            all,
+            human_fmt,
+            0,
+            usize::MAX,
+            summary,
+            &mut out,
+        );
         grand_total += total;
         if summary {
-            let size = if human_fmt { human(total) } else { total.to_string() };
+            let size = if human_fmt {
+                human(total)
+            } else {
+                total.to_string()
+            };
             println!("{size}\t{p}");
         } else {
             for (s, name) in out {
@@ -114,7 +142,11 @@ fn main(argv: &[String]) -> i32 {
         }
     }
     if grand {
-        let size = if human_fmt { human(grand_total) } else { grand_total.to_string() };
+        let size = if human_fmt {
+            human(grand_total)
+        } else {
+            grand_total.to_string()
+        };
         println!("{size}\ttotal");
     }
     0

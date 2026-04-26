@@ -53,14 +53,18 @@ fn classify_suffix(meta: &Metadata, mode: u32) -> &'static str {
 /// `Mon DD  YYYY` for entries older than 6 months and `Mon DD HH:MM`
 /// otherwise.
 fn format_time(t: SystemTime) -> String {
-    let secs_since_epoch = t.duration_since(UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0);
+    let secs_since_epoch = t
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0);
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs() as i64)
         .unwrap_or(0);
     let (year, month, day, hour, minute) = ymd_hm_local(secs_since_epoch);
-    let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let months = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
     let mname = months.get(month as usize - 1).copied().unwrap_or("Jan");
     if (now - secs_since_epoch).abs() > 180 * 86_400 {
         format!("{mname} {day:>2}  {year:04}")
@@ -183,14 +187,21 @@ fn list_one(
     };
 
     if !st.is_dir() {
-        let name_os = root.file_name().map(|s| s.to_string_lossy().into_owned()).unwrap_or_else(|| root.display().to_string());
+        let name_os = root
+            .file_name()
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or_else(|| root.display().to_string());
         let suffix = if flags.classify {
             classify_suffix(&st, unix_mode(&st, root))
         } else {
             ""
         };
         if flags.long_fmt {
-            let _ = writeln!(out, "{}", format_long(&format!("{name_os}{suffix}"), &st, root));
+            let _ = writeln!(
+                out,
+                "{}",
+                format_long(&format!("{name_os}{suffix}"), &st, root)
+            );
         } else {
             let _ = writeln!(out, "{name_os}{suffix}");
         }
@@ -217,7 +228,10 @@ fn list_one(
     let mut entries: Vec<(String, PathBuf, Option<Metadata>)> = Vec::new();
     if flags.all {
         entries.push((".".to_string(), root.to_path_buf(), None));
-        let parent = root.parent().map(|p| p.to_path_buf()).unwrap_or_else(|| root.to_path_buf());
+        let parent = root
+            .parent()
+            .map(|p| p.to_path_buf())
+            .unwrap_or_else(|| root.to_path_buf());
         entries.push(("..".to_string(), parent, None));
     }
     for n in names {

@@ -131,7 +131,10 @@ fn main(argv: &[String]) -> i32 {
         return 2;
     }
     if size_arg.is_none() && reference.is_none() {
-        err("truncate", "you must specify either '--size' or '--reference'");
+        err(
+            "truncate",
+            "you must specify either '--size' or '--reference'",
+        );
         return 2;
     }
 
@@ -199,7 +202,11 @@ fn main(argv: &[String]) -> i32 {
 
         // Open with create+write (no truncate flag) so the file exists, then
         // resize. set_len both grows (zero-fills) and shrinks.
-        let res = OpenOptions::new().write(true).create(true).truncate(false).open(f);
+        let res = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(f);
         let fh = match res {
             Ok(fh) => fh,
             Err(e) => {

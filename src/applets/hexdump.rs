@@ -122,14 +122,21 @@ fn main(argv: &[String]) -> i32 {
                 }
                 let _ = write!(out, "  |");
                 for b in bytes {
-                    let c = if (32..127).contains(b) { *b as char } else { '.' };
+                    let c = if (32..127).contains(b) {
+                        *b as char
+                    } else {
+                        '.'
+                    };
                     let _ = write!(out, "{c}");
                 }
                 let _ = writeln!(out, "|");
             }
             Mode::HexShorts | Mode::DecShorts | Mode::OctShorts => {
                 for chunk in data[..n].chunks(2) {
-                    let v = chunk.iter().enumerate().fold(0u16, |acc, (j, b)| acc | ((*b as u16) << (j * 8)));
+                    let v = chunk
+                        .iter()
+                        .enumerate()
+                        .fold(0u16, |acc, (j, b)| acc | ((*b as u16) << (j * 8)));
                     match mode {
                         Mode::HexShorts => {
                             let _ = write!(out, " {v:04x}");

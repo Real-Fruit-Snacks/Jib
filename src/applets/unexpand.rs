@@ -40,7 +40,10 @@ fn compact_spaces(start_col: usize, count: usize, tabs: &[usize], step: usize) -
         let next_stop = if step > 0 {
             ((col / step) + 1) * step
         } else {
-            tabs.iter().copied().find(|&t| t > col).unwrap_or(col + remaining)
+            tabs.iter()
+                .copied()
+                .find(|&t| t > col)
+                .unwrap_or(col + remaining)
         };
         let gap = next_stop - col;
         if gap <= remaining {

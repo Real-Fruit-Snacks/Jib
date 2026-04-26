@@ -156,7 +156,11 @@ fn main(argv: &[String]) -> i32 {
         }
     };
     let to = Duration::from_secs(timeout_secs.unwrap_or(10));
-    let sa = match (host.as_str(), p).to_socket_addrs().ok().and_then(|mut it| it.next()) {
+    let sa = match (host.as_str(), p)
+        .to_socket_addrs()
+        .ok()
+        .and_then(|mut it| it.next())
+    {
         Some(s) => s,
         None => {
             err("nc", &format!("could not resolve {host}"));

@@ -135,9 +135,21 @@ fn main(argv: &[String]) -> i32 {
         let path = std::path::Path::new(p);
         match statvfs(path) {
             Some((total, free, used)) => {
-                let size = if human_fmt { human(total) } else { total.to_string() };
-                let used = if human_fmt { human(used) } else { used.to_string() };
-                let free = if human_fmt { human(free) } else { free.to_string() };
+                let size = if human_fmt {
+                    human(total)
+                } else {
+                    total.to_string()
+                };
+                let used = if human_fmt {
+                    human(used)
+                } else {
+                    used.to_string()
+                };
+                let free = if human_fmt {
+                    human(free)
+                } else {
+                    free.to_string()
+                };
                 if show_type {
                     println!("{p:<11} -     {size:<6} {used:<6} {free:<6} {p}");
                 } else {

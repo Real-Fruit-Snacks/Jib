@@ -45,7 +45,9 @@ fn parse_list(s: &str) -> Result<Vec<Range>, String> {
             };
             (s, e)
         } else {
-            let n: usize = part.parse().map_err(|_| format!("invalid position: '{part}'"))?;
+            let n: usize = part
+                .parse()
+                .map_err(|_| format!("invalid position: '{part}'"))?;
             (n, n)
         };
         if start < 1 {

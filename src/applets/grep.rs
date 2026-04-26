@@ -96,7 +96,10 @@ fn main(argv: &[String]) -> i32 {
         }
         if a.len() > 2
             && matches!(&a[..2], "-A" | "-B" | "-C")
-            && a[2..].trim_start_matches('-').chars().all(|c| c.is_ascii_digit())
+            && a[2..]
+                .trim_start_matches('-')
+                .chars()
+                .all(|c| c.is_ascii_digit())
         {
             let prefix = a[..2].to_string();
             match parse_count(&prefix, &a[2..]) {
@@ -201,7 +204,8 @@ fn main(argv: &[String]) -> i32 {
 
         let mut match_lines: Vec<(usize, Vec<(usize, usize)>)> = Vec::new();
         for (n, text) in &lines {
-            let found: Vec<(usize, usize)> = rx.find_iter(text).map(|m| (m.start(), m.end())).collect();
+            let found: Vec<(usize, usize)> =
+                rx.find_iter(text).map(|m| (m.start(), m.end())).collect();
             let is_match = !found.is_empty() != invert;
             if is_match {
                 let toks = if invert { Vec::new() } else { found };
@@ -237,18 +241,19 @@ fn main(argv: &[String]) -> i32 {
             continue;
         }
 
-        let write_line = |out: &mut dyn Write, path: &str, lineno: usize, text: &str, is_match: bool| {
-            let mut parts: Vec<String> = Vec::new();
-            if show_filename {
-                parts.push(path.to_string());
-            }
-            if show_line_num {
-                parts.push(lineno.to_string());
-            }
-            parts.push(text.to_string());
-            let sep = if is_match { ":" } else { "-" };
-            let _ = writeln!(out, "{}", parts.join(sep));
-        };
+        let write_line =
+            |out: &mut dyn Write, path: &str, lineno: usize, text: &str, is_match: bool| {
+                let mut parts: Vec<String> = Vec::new();
+                if show_filename {
+                    parts.push(path.to_string());
+                }
+                if show_line_num {
+                    parts.push(lineno.to_string());
+                }
+                parts.push(text.to_string());
+                let sep = if is_match { ":" } else { "-" };
+                let _ = writeln!(out, "{}", parts.join(sep));
+            };
 
         if only_matching {
             for (n, ranges) in &match_lines {
@@ -269,7 +274,8 @@ fn main(argv: &[String]) -> i32 {
         matched_any = true;
 
         // Build set of lines to print, with context.
-        let mut to_print: std::collections::BTreeMap<usize, bool> = std::collections::BTreeMap::new();
+        let mut to_print: std::collections::BTreeMap<usize, bool> =
+            std::collections::BTreeMap::new();
         for (n, _) in &match_lines {
             to_print.insert(*n, true);
         }
@@ -300,5 +306,9 @@ fn main(argv: &[String]) -> i32 {
         }
     }
 
-    if matched_any { 0 } else { 1 }
+    if matched_any {
+        0
+    } else {
+        1
+    }
 }

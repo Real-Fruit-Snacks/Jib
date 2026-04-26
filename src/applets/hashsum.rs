@@ -71,10 +71,7 @@ fn parse_check_line(line: &str, label: &str) -> Option<(String, String)> {
     let prefix = format!("{label} (");
     if let Some(rest) = line.strip_prefix(&prefix) {
         if let Some(close) = rest.rfind(") = ") {
-            return Some((
-                rest[close + 4..].to_string(),
-                rest[..close].to_string(),
-            ));
+            return Some((rest[close + 4..].to_string(), rest[..close].to_string()));
         }
     }
     // GNU form: HEX  FILE  (with optional ` *` binary marker before file).
@@ -87,7 +84,9 @@ fn parse_check_line(line: &str, label: &str) -> Option<(String, String)> {
         return None;
     }
     let rest: String = chars.collect();
-    let trimmed = rest.trim_start_matches([' ', '\t']).trim_start_matches(['*', ' ']);
+    let trimmed = rest
+        .trim_start_matches([' ', '\t'])
+        .trim_start_matches(['*', ' ']);
     if trimmed.is_empty() {
         return None;
     }
@@ -133,9 +132,10 @@ fn do_check(
                 None => {
                     malformed += 1;
                     if warn {
-                        err(applet, &format!(
-                            "{f}:{lineno}: improperly formatted {label} checksum line"
-                        ));
+                        err(
+                            applet,
+                            &format!("{f}:{lineno}: improperly formatted {label} checksum line"),
+                        );
                     }
                     continue;
                 }

@@ -32,7 +32,10 @@ fn class_bytes(name: &str) -> Option<Vec<u8>> {
         "print" => (32u8..=126).chain(std::iter::once(b'\t')).collect(),
         "cntrl" => (0u8..=31).chain(std::iter::once(0x7f)).collect(),
         "punct" => b"!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~".to_vec(),
-        "xdigit" => (b'0'..=b'9').chain(b'A'..=b'F').chain(b'a'..=b'f').collect(),
+        "xdigit" => (b'0'..=b'9')
+            .chain(b'A'..=b'F')
+            .chain(b'a'..=b'f')
+            .collect(),
         _ => return None,
     };
     Some(v)
@@ -115,7 +118,9 @@ fn main(argv: &[String]) -> i32 {
         }
         if a.starts_with('-')
             && a.len() > 1
-            && a[1..].chars().all(|c| matches!(c, 'd' | 's' | 'c' | 'C' | 't'))
+            && a[1..]
+                .chars()
+                .all(|c| matches!(c, 'd' | 's' | 'c' | 'C' | 't'))
         {
             for ch in a[1..].chars() {
                 match ch {
@@ -138,7 +143,10 @@ fn main(argv: &[String]) -> i32 {
         return 2;
     }
     if !delete && !squeeze && positional.len() < 2 {
-        err("tr", "when not deleting or squeezing, two arguments are required");
+        err(
+            "tr",
+            "when not deleting or squeezing, two arguments are required",
+        );
         return 2;
     }
 
@@ -156,7 +164,13 @@ fn main(argv: &[String]) -> i32 {
         let in_set1: std::collections::HashSet<u8> = set1.iter().copied().collect();
         data = data
             .into_iter()
-            .filter(|b| if complement { in_set1.contains(b) } else { !in_set1.contains(b) })
+            .filter(|b| {
+                if complement {
+                    in_set1.contains(b)
+                } else {
+                    !in_set1.contains(b)
+                }
+            })
             .collect();
     } else if positional.len() >= 2 {
         let mut src = set1.clone();
@@ -186,7 +200,11 @@ fn main(argv: &[String]) -> i32 {
     }
 
     if squeeze {
-        let sq_bytes = if delete && !set2.is_empty() { &set2 } else { &set1 };
+        let sq_bytes = if delete && !set2.is_empty() {
+            &set2
+        } else {
+            &set1
+        };
         let mut sq_set: std::collections::HashSet<u8> = sq_bytes.iter().copied().collect();
         if complement && !delete {
             sq_set = (0..=255u8).filter(|b| !sq_set.contains(b)).collect();

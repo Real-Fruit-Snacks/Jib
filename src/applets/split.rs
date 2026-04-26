@@ -89,8 +89,14 @@ fn main(argv: &[String]) -> i32 {
         line_count = Some(1000);
     }
     let positional: Vec<String> = args[i..].to_vec();
-    let input = positional.first().cloned().unwrap_or_else(|| "-".to_string());
-    let prefix = positional.get(1).cloned().unwrap_or_else(|| "x".to_string());
+    let input = positional
+        .first()
+        .cloned()
+        .unwrap_or_else(|| "-".to_string());
+    let prefix = positional
+        .get(1)
+        .cloned()
+        .unwrap_or_else(|| "x".to_string());
 
     let make_name = |idx: usize| -> String {
         let suf = if numeric {

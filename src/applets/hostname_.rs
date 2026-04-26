@@ -31,12 +31,12 @@ fn main(argv: &[String]) -> i32 {
                 // back to whatever the OS resolves the hostname to. This
                 // matches the Python implementation's getaddrinfo() pass.
                 let h = host();
-                match (h.as_str(), std::net::ToSocketAddrs::to_socket_addrs(
-                    &(h.as_str(), 0u16),
-                )) {
+                match (
+                    h.as_str(),
+                    std::net::ToSocketAddrs::to_socket_addrs(&(h.as_str(), 0u16)),
+                ) {
                     (_, Ok(iter)) => {
-                        let mut ips: Vec<String> =
-                            iter.map(|sa| sa.ip().to_string()).collect();
+                        let mut ips: Vec<String> = iter.map(|sa| sa.ip().to_string()).collect();
                         ips.sort();
                         ips.dedup();
                         println!("{}", ips.join(" "));
@@ -92,7 +92,7 @@ impl CanonResolve for (&str, u16) {
         use std::net::ToSocketAddrs;
         let mut iter = self.to_socket_addrs().ok()?;
         let _ = iter.next()?; // we don't actually use the IP — std refuses
-        // to do reverse DNS without a dep, so we just echo the host.
+                              // to do reverse DNS without a dep, so we just echo the host.
         Some(self.0.to_string())
     }
 }

@@ -155,10 +155,7 @@ fn main(argv: &[String]) -> i32 {
             err_path(
                 "realpath",
                 p,
-                &std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    "No such file or directory",
-                ),
+                &std::io::Error::new(std::io::ErrorKind::NotFound, "No such file or directory"),
             );
             rc = 1;
             continue;

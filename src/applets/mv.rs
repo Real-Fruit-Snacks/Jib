@@ -28,7 +28,10 @@ fn should_overwrite(
         return false;
     }
     if update {
-        if let (Ok(s), Ok(t)) = (src.metadata().and_then(|m| m.modified()), target.metadata().and_then(|m| m.modified())) {
+        if let (Ok(s), Ok(t)) = (
+            src.metadata().and_then(|m| m.modified()),
+            target.metadata().and_then(|m| m.modified()),
+        ) {
             if s <= t {
                 return false;
             }
@@ -138,7 +141,10 @@ fn main(argv: &[String]) -> i32 {
     let sources = &positional[..positional.len() - 1];
     let dest_is_dir = dest.is_dir();
     if sources.len() > 1 && !dest_is_dir {
-        err("mv", &format!("target '{}' is not a directory", dest.display()));
+        err(
+            "mv",
+            &format!("target '{}' is not a directory", dest.display()),
+        );
         return 1;
     }
 

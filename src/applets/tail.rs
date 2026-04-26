@@ -31,7 +31,13 @@ enum Source {
 /// Read all of `r`, then write the trailing `lines` lines or `byte_count`
 /// bytes to stdout. For lines we keep a deque of size `lines`; for bytes we
 /// just slice the tail of the buffer. Matches `_initial_tail` in Python.
-fn initial_tail<R: Read>(r: R, bytes_mode: bool, byte_count: i64, lines: i64, out: &mut impl Write) {
+fn initial_tail<R: Read>(
+    r: R,
+    bytes_mode: bool,
+    byte_count: i64,
+    lines: i64,
+    out: &mut impl Write,
+) {
     if bytes_mode {
         let mut all = Vec::new();
         if BufReader::new(r).read_to_end(&mut all).is_err() {
@@ -106,7 +112,10 @@ fn follow(files: &[String], multi: bool, sleep: f64) -> i32 {
 
     let stdout = io::stdout();
     let mut out = stdout.lock();
-    let mut last_file = handles.last().map(|(n, _, _)| n.clone()).unwrap_or_default();
+    let mut last_file = handles
+        .last()
+        .map(|(n, _, _)| n.clone())
+        .unwrap_or_default();
     let mut buf = vec![0u8; 64 * 1024];
 
     loop {
@@ -233,7 +242,13 @@ fn main(argv: &[String]) -> i32 {
     } else {
         raw_files
             .iter()
-            .map(|f| if f == "-" { Source::Stdin } else { Source::File(f.clone()) })
+            .map(|f| {
+                if f == "-" {
+                    Source::Stdin
+                } else {
+                    Source::File(f.clone())
+                }
+            })
             .collect()
     };
     let multi = files_vec.len() > 1;
@@ -255,7 +270,9 @@ fn main(argv: &[String]) -> i32 {
             let _ = out.flush();
         }
         match src {
-            Source::Stdin => initial_tail(io::stdin().lock(), bytes_mode, byte_count, lines, &mut out),
+            Source::Stdin => {
+                initial_tail(io::stdin().lock(), bytes_mode, byte_count, lines, &mut out)
+            }
             Source::File(p) => match File::open(p) {
                 Ok(fh) => initial_tail(fh, bytes_mode, byte_count, lines, &mut out),
                 Err(e) => {

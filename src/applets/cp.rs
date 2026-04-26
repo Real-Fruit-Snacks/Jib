@@ -153,7 +153,10 @@ fn main(argv: &[String]) -> i32 {
     let sources = &positional[..positional.len() - 1];
     let dest_is_dir = dest.is_dir();
     if sources.len() > 1 && !dest_is_dir {
-        err("cp", &format!("target '{}' is not a directory", dest.display()));
+        err(
+            "cp",
+            &format!("target '{}' is not a directory", dest.display()),
+        );
         return 1;
     }
 
@@ -200,9 +203,7 @@ fn main(argv: &[String]) -> i32 {
                 if preserve_meta {
                     if let Ok(meta) = src_path.metadata() {
                         if let Ok(mtime) = meta.modified() {
-                            if let Ok(f) =
-                                std::fs::OpenOptions::new().write(true).open(&target)
-                            {
+                            if let Ok(f) = std::fs::OpenOptions::new().write(true).open(&target) {
                                 let _ = f.set_modified(mtime);
                             }
                         }

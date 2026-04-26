@@ -29,7 +29,10 @@ fn skip(r: &mut dyn Read, n: u64) -> io::Result<()> {
         let want = left.min(buf.len() as u64) as usize;
         let n = r.read(&mut buf[..want])?;
         if n == 0 {
-            return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "skip past EOF"));
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "skip past EOF",
+            ));
         }
         left -= n as u64;
     }
@@ -226,12 +229,7 @@ fn main(argv: &[String]) -> i32 {
                 );
                 return 1;
             } else {
-                let _ = writeln!(
-                    out,
-                    "{f1} {f2} differ: byte {}, line {}",
-                    offset + 1,
-                    line
-                );
+                let _ = writeln!(out, "{f1} {f2} differ: byte {}, line {}", offset + 1, line);
                 return 1;
             }
         }
@@ -240,5 +238,9 @@ fn main(argv: &[String]) -> i32 {
         }
         offset += 1;
     }
-    if differ && print_all { 1 } else { 0 }
+    if differ && print_all {
+        1
+    } else {
+        0
+    }
 }

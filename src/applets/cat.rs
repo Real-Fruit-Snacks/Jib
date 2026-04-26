@@ -106,7 +106,11 @@ fn copy_numbered(srcs: &[Source], number_all: bool, number_nonblank: bool) -> i3
                 break;
             }
             let ends_nl = buf.ends_with(b"\n");
-            let body = if ends_nl { &buf[..buf.len() - 1] } else { &buf[..] };
+            let body = if ends_nl {
+                &buf[..buf.len() - 1]
+            } else {
+                &buf[..]
+            };
             let blank = body.is_empty();
             if number_all || (number_nonblank && !blank) {
                 counter += 1;

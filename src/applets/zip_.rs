@@ -40,8 +40,8 @@ fn main_zip(argv: &[String]) -> i32 {
         }
     };
     let mut zw = zip::ZipWriter::new(outf);
-    let opts: zip::write::SimpleFileOptions =
-        zip::write::SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+    let opts: zip::write::SimpleFileOptions = zip::write::SimpleFileOptions::default()
+        .compression_method(zip::CompressionMethod::Deflated);
 
     for f in files {
         if let Err(e) = add_path(&mut zw, Path::new(f), Path::new(""), opts) {
@@ -70,7 +70,8 @@ fn add_path(
     let meta = std::fs::metadata(path).map_err(|e| e.to_string())?;
     if meta.is_dir() {
         let entry_name = format!("{}/", rel.display()).replace('\\', "/");
-        zw.add_directory(entry_name, opts).map_err(|e| e.to_string())?;
+        zw.add_directory(entry_name, opts)
+            .map_err(|e| e.to_string())?;
         for entry in std::fs::read_dir(path).map_err(|e| e.to_string())? {
             let entry = entry.map_err(|e| e.to_string())?;
             add_path(zw, &entry.path(), &rel, opts)?;
@@ -131,7 +132,9 @@ fn main_unzip(argv: &[String]) -> i32 {
             return 1;
         }
     };
-    let dest_root = dest.map(PathBuf::from).unwrap_or_else(|| PathBuf::from("."));
+    let dest_root = dest
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("."));
     if list_only {
         for i in 0..zr.len() {
             let entry = match zr.by_index(i) {

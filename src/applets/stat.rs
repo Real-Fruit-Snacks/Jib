@@ -7,7 +7,9 @@ use std::fs::Metadata;
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::common::{err, err_path, filemode, group_name, inode, nlink, uid_gid, unix_mode, user_name};
+use crate::common::{
+    err, err_path, filemode, group_name, inode, nlink, uid_gid, unix_mode, user_name,
+};
 use crate::registry::Applet;
 
 pub const APPLET: Applet = Applet {
@@ -31,7 +33,9 @@ fn type_string(mode: u32) -> &'static str {
 }
 
 fn epoch_secs(t: SystemTime) -> i64 {
-    t.duration_since(UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0)
+    t.duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0)
 }
 
 fn fmt_time(t: SystemTime) -> String {

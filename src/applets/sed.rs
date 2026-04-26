@@ -251,7 +251,11 @@ fn active_for(
         }
         result
     };
-    if cmd.negate { !base } else { base }
+    if cmd.negate {
+        !base
+    } else {
+        base
+    }
 }
 
 /// Apply backslash references and `&` in a replacement string. We rebuild
@@ -564,4 +568,3 @@ fn main(argv: &[String]) -> i32 {
     }
     rc
 }
-

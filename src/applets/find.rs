@@ -245,7 +245,10 @@ impl Node for TimeTest {
             _ => None,
         };
         let secs = match t {
-            Some(t) => t.duration_since(UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0),
+            Some(t) => t
+                .duration_since(UNIX_EPOCH)
+                .map(|d| d.as_secs() as i64)
+                .unwrap_or(0),
             None => return false,
         };
         let diff = ctx.now_secs - secs;
@@ -345,7 +348,13 @@ impl Node for ExecAction {
             let argv: Vec<String> = self
                 .cmd
                 .iter()
-                .map(|tok| if tok == "{}" { p.display().to_string() } else { tok.clone() })
+                .map(|tok| {
+                    if tok == "{}" {
+                        p.display().to_string()
+                    } else {
+                        tok.clone()
+                    }
+                })
                 .collect();
             match Command::new(&argv[0]).args(&argv[1..]).status() {
                 Ok(s) => s.success(),
@@ -497,14 +506,15 @@ impl Parser {
                 if !matches!(v.as_str(), "f" | "d" | "l") {
                     return Err(format!("-type: unsupported type '{v}'"));
                 }
-                Ok(Box::new(TypeTest { t: v.chars().next().unwrap() }))
+                Ok(Box::new(TypeTest {
+                    t: v.chars().next().unwrap(),
+                }))
             }
             "-size" => self.parse_size(),
             "-mtime" | "-mmin" | "-atime" | "-amin" | "-ctime" | "-cmin" => self.parse_time(&tok),
             "-newer" => {
                 let f = self.need_arg("-newer")?;
-                let m = std::fs::metadata(&f)
-                    .map_err(|e| format!("-newer: {f}: {e}"))?;
+                let m = std::fs::metadata(&f).map_err(|e| format!("-newer: {f}: {e}"))?;
                 let secs = m
                     .modified()
                     .ok()
@@ -539,7 +549,9 @@ impl Parser {
         if j == 0 {
             return Err("-size: invalid value".to_string());
         }
-        let n: u64 = body[..j].parse().map_err(|_| "-size: invalid value".to_string())?;
+        let n: u64 = body[..j]
+            .parse()
+            .map_err(|_| "-size: invalid value".to_string())?;
         let suffix = &body[j..];
         let unit: u64 = match suffix {
             "" | "b" => 512,
@@ -561,7 +573,9 @@ impl Parser {
         } else {
             ('=', v.as_str())
         };
-        let n: i64 = body.parse().map_err(|_| format!("{tok}: invalid value '{v}'"))?;
+        let n: i64 = body
+            .parse()
+            .map_err(|_| format!("{tok}: invalid value '{v}'"))?;
         let which = tok.as_bytes()[1] as char;
         let in_minutes = tok.ends_with("min");
         Ok(Box::new(TimeTest {
@@ -707,7 +721,10 @@ fn main(argv: &[String]) -> i32 {
         }
     };
     if parser.i != parser.toks.len() {
-        err("find", &format!("unexpected token: '{}'", parser.toks[parser.i]));
+        err(
+            "find",
+            &format!("unexpected token: '{}'", parser.toks[parser.i]),
+        );
         return 2;
     }
 

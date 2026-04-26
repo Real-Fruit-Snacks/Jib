@@ -99,7 +99,9 @@ fn main(argv: &[String]) -> i32 {
             break;
         }
         match a.as_str() {
-            s if s == "-n" || (s.starts_with("-n") && s[2..].chars().all(|c| c.is_ascii_digit())) => {
+            s if s == "-n"
+                || (s.starts_with("-n") && s[2..].chars().all(|c| c.is_ascii_digit())) =>
+            {
                 match take_value("-n", &args, i) {
                     Some((v, ni)) => match v.parse() {
                         Ok(n) => {
@@ -114,7 +116,9 @@ fn main(argv: &[String]) -> i32 {
                     None => return 2,
                 }
             }
-            s if s == "-L" || (s.starts_with("-L") && s[2..].chars().all(|c| c.is_ascii_digit())) => {
+            s if s == "-L"
+                || (s.starts_with("-L") && s[2..].chars().all(|c| c.is_ascii_digit())) =>
+            {
                 match take_value("-L", &args, i) {
                     Some((v, ni)) => match v.parse() {
                         Ok(n) => {
@@ -192,11 +196,20 @@ fn main(argv: &[String]) -> i32 {
     }
 
     let tokens: Vec<String> = if null_sep {
-        data.split('\0').filter(|s| !s.is_empty()).map(String::from).collect()
+        data.split('\0')
+            .filter(|s| !s.is_empty())
+            .map(String::from)
+            .collect()
     } else if let Some(d) = delimiter {
-        data.split(d).filter(|s| !s.is_empty()).map(String::from).collect()
+        data.split(d)
+            .filter(|s| !s.is_empty())
+            .map(String::from)
+            .collect()
     } else if lines_per_call.is_some() {
-        data.lines().filter(|s| !s.is_empty()).map(String::from).collect()
+        data.lines()
+            .filter(|s| !s.is_empty())
+            .map(String::from)
+            .collect()
     } else {
         tokenize_shell_like(&data)
     };
@@ -209,10 +222,7 @@ fn main(argv: &[String]) -> i32 {
     if let Some(repl) = replace_str {
         let mut rc = 0;
         for tok in &tokens {
-            let argv: Vec<String> = cmd_template
-                .iter()
-                .map(|a| a.replace(&repl, tok))
-                .collect();
+            let argv: Vec<String> = cmd_template.iter().map(|a| a.replace(&repl, tok)).collect();
             if trace {
                 eprintln!("{}", argv.join(" "));
             }

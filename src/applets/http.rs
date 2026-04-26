@@ -35,7 +35,10 @@ fn parse_url(u: &str) -> Option<Url> {
     let (host, port) = if let Some((h, p)) = host_port.rsplit_once(':') {
         (h.to_string(), p.parse().ok()?)
     } else {
-        (host_port.to_string(), if scheme == "https" { 443 } else { 80 })
+        (
+            host_port.to_string(),
+            if scheme == "https" { 443 } else { 80 },
+        )
     };
     Some(Url {
         scheme: scheme.to_string(),
@@ -218,13 +221,14 @@ fn main(argv: &[String]) -> i32 {
         return 2;
     }
     let to = Duration::from_secs(timeout_secs);
-    let (status, hdrs, body_bytes) = match send_request(&url, &method, &headers, body.as_deref(), to) {
-        Ok(t) => t,
-        Err(e) => {
-            err("http", &e.to_string());
-            return 1;
-        }
-    };
+    let (status, hdrs, body_bytes) =
+        match send_request(&url, &method, &headers, body.as_deref(), to) {
+            Ok(t) => t,
+            Err(e) => {
+                err("http", &e.to_string());
+                return 1;
+            }
+        };
     if fail_on_error && status >= 400 {
         eprintln!("http: HTTP {status}");
         return 1;

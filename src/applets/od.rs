@@ -26,10 +26,9 @@ enum Fmt {
 
 fn format_byte_char(b: u8) -> &'static str {
     const NAMES: [&str; 32] = [
-        "nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel", " bs", " ht",
-        " nl", " vt", " ff", " cr", " so", " si", "dle", "dc1", "dc2", "dc3",
-        "dc4", "nak", "syn", "etb", "can", " em", "sub", "esc", " fs", " gs",
-        " rs", " us",
+        "nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel", " bs", " ht", " nl", " vt", " ff",
+        " cr", " so", " si", "dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb", "can", " em",
+        "sub", "esc", " fs", " gs", " rs", " us",
     ];
     if b < 32 {
         NAMES[b as usize]
@@ -150,19 +149,28 @@ fn main(argv: &[String]) -> i32 {
             }
             Fmt::Octal => {
                 for chunk in data[..line_len].chunks(2) {
-                    let v = chunk.iter().enumerate().fold(0u16, |acc, (i, b)| acc | ((*b as u16) << (i * 8)));
+                    let v = chunk
+                        .iter()
+                        .enumerate()
+                        .fold(0u16, |acc, (i, b)| acc | ((*b as u16) << (i * 8)));
                     let _ = write!(out, " {v:06o}");
                 }
             }
             Fmt::Decimal => {
                 for chunk in data[..line_len].chunks(2) {
-                    let v = chunk.iter().enumerate().fold(0u16, |acc, (i, b)| acc | ((*b as u16) << (i * 8)));
+                    let v = chunk
+                        .iter()
+                        .enumerate()
+                        .fold(0u16, |acc, (i, b)| acc | ((*b as u16) << (i * 8)));
                     let _ = write!(out, " {v:5}");
                 }
             }
             Fmt::Hex => {
                 for chunk in data[..line_len].chunks(2) {
-                    let v = chunk.iter().enumerate().fold(0u16, |acc, (i, b)| acc | ((*b as u16) << (i * 8)));
+                    let v = chunk
+                        .iter()
+                        .enumerate()
+                        .fold(0u16, |acc, (i, b)| acc | ((*b as u16) << (i * 8)));
                     let _ = write!(out, " {v:04x}");
                 }
             }

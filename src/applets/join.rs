@@ -27,7 +27,11 @@ fn split_fields(line: &str, sep: Option<char>) -> Vec<String> {
 
 fn key_of(fields: &[String], idx: usize, ignore_case: bool) -> String {
     let s = fields.get(idx).cloned().unwrap_or_default();
-    if ignore_case { s.to_lowercase() } else { s }
+    if ignore_case {
+        s.to_lowercase()
+    } else {
+        s
+    }
 }
 
 fn read_lines(path: &str) -> io::Result<Vec<String>> {
@@ -199,12 +203,23 @@ fn render_default(a: &[String], b: &[String], f1: usize, f2: usize, sep: char) -
     parts.join(&sep.to_string())
 }
 
-fn render_spec(spec: &str, a: &[String], b: &[String], f1: usize, f2: usize, empty: Option<&str>) -> String {
+fn render_spec(
+    spec: &str,
+    a: &[String],
+    b: &[String],
+    f1: usize,
+    f2: usize,
+    empty: Option<&str>,
+) -> String {
     spec.split(',')
         .map(|tok| {
             let tok = tok.trim();
             if tok == "0" {
-                return a.get(f1).cloned().or_else(|| b.get(f2).cloned()).unwrap_or_default();
+                return a
+                    .get(f1)
+                    .cloned()
+                    .or_else(|| b.get(f2).cloned())
+                    .unwrap_or_default();
             }
             if let Some((file, idx)) = tok.split_once('.') {
                 let idx = idx.parse::<usize>().unwrap_or(1).saturating_sub(1);

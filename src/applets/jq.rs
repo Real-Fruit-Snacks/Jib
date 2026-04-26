@@ -111,8 +111,7 @@ fn parse_string(s: &[u8], i: &mut usize) -> Result<String, String> {
                     if *i + 5 >= s.len() {
                         return Err("bad \\u".to_string());
                     }
-                    let hex = std::str::from_utf8(&s[*i + 2..*i + 6])
-                        .map_err(|e| e.to_string())?;
+                    let hex = std::str::from_utf8(&s[*i + 2..*i + 6]).map_err(|e| e.to_string())?;
                     let code = u32::from_str_radix(hex, 16).map_err(|e| e.to_string())?;
                     *i += 6;
                     if let Some(c) = char::from_u32(code) {
@@ -237,7 +236,14 @@ fn json_to_string(v: &J, raw: bool, compact: bool, sort_keys: bool, indent: usiz
     out
 }
 
-fn write_json(out: &mut String, v: &J, compact: bool, sort_keys: bool, indent: usize, _raw_top: bool) {
+fn write_json(
+    out: &mut String,
+    v: &J,
+    compact: bool,
+    sort_keys: bool,
+    indent: usize,
+    _raw_top: bool,
+) {
     match v {
         J::Null => out.push_str("null"),
         J::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
@@ -309,7 +315,14 @@ fn write_json(out: &mut String, v: &J, compact: bool, sort_keys: bool, indent: u
                     if i > 0 {
                         out.push(',');
                     }
-                    write_json(out, &J::Str((*k).clone()), compact, sort_keys, indent, false);
+                    write_json(
+                        out,
+                        &J::Str((*k).clone()),
+                        compact,
+                        sort_keys,
+                        indent,
+                        false,
+                    );
                     out.push(':');
                     write_json(out, v, compact, sort_keys, indent, false);
                 }
@@ -331,7 +344,14 @@ fn write_json(out: &mut String, v: &J, compact: bool, sort_keys: bool, indent: u
                 for (i, (k, v)) in it.iter().enumerate() {
                     out.push('\n');
                     out.push_str(&pad);
-                    write_json(out, &J::Str((*k).clone()), compact, sort_keys, indent + 1, false);
+                    write_json(
+                        out,
+                        &J::Str((*k).clone()),
+                        compact,
+                        sort_keys,
+                        indent + 1,
+                        false,
+                    );
                     out.push_str(": ");
                     write_json(out, v, compact, sort_keys, indent + 1, false);
                     if i + 1 < it.len() {
@@ -443,7 +463,9 @@ impl<'a> PFilter<'a> {
                 {
                     self.i += 1;
                 }
-                let name = std::str::from_utf8(&self.s[start..self.i]).unwrap_or("").to_string();
+                let name = std::str::from_utf8(&self.s[start..self.i])
+                    .unwrap_or("")
+                    .to_string();
                 let opt = self.i < self.s.len() && self.s[self.i] == b'?';
                 if opt {
                     self.i += 1;
@@ -487,13 +509,17 @@ impl<'a> PFilter<'a> {
         }
         // identifier — could be a built-in call.
         let start = self.i;
-        while self.i < self.s.len() && (self.s[self.i].is_ascii_alphanumeric() || self.s[self.i] == b'_') {
+        while self.i < self.s.len()
+            && (self.s[self.i].is_ascii_alphanumeric() || self.s[self.i] == b'_')
+        {
             self.i += 1;
         }
         if self.i == start {
             return Err(format!("unexpected '{}'", c as char));
         }
-        let name = std::str::from_utf8(&self.s[start..self.i]).unwrap_or("").to_string();
+        let name = std::str::from_utf8(&self.s[start..self.i])
+            .unwrap_or("")
+            .to_string();
         match name.as_str() {
             "null" => return Ok(F::NullLit),
             "true" => return Ok(F::BoolLit(true)),
@@ -535,7 +561,9 @@ impl<'a> PFilter<'a> {
                     {
                         self.i += 1;
                     }
-                    let name = std::str::from_utf8(&self.s[start..self.i]).unwrap_or("").to_string();
+                    let name = std::str::from_utf8(&self.s[start..self.i])
+                        .unwrap_or("")
+                        .to_string();
                     let opt = self.i < self.s.len() && self.s[self.i] == b'?';
                     if opt {
                         self.i += 1;
@@ -687,7 +715,9 @@ impl<'a> PFilter<'a> {
                 {
                     self.i += 1;
                 }
-                std::str::from_utf8(&self.s[start..self.i]).unwrap_or("").to_string()
+                std::str::from_utf8(&self.s[start..self.i])
+                    .unwrap_or("")
+                    .to_string()
             };
             self.skip_ws();
             let value = if self.i < self.s.len() && self.s[self.i] == b':' {
@@ -696,7 +726,10 @@ impl<'a> PFilter<'a> {
                 // pairs, so we don't fall into parse_comma here.
                 self.parse_pipe_no_comma()?
             } else {
-                F::Pipe(Box::new(F::Identity), Box::new(F::Field(key.clone(), false)))
+                F::Pipe(
+                    Box::new(F::Identity),
+                    Box::new(F::Field(key.clone(), false)),
+                )
             };
             entries.push((key, value));
             self.skip_ws();
@@ -727,7 +760,10 @@ fn jeq(a: &J, b: &J) -> bool {
             x.len() == y.len() && x.iter().zip(y.iter()).all(|(a, b)| jeq(a, b))
         }
         (J::Obj(x), J::Obj(y)) => {
-            x.len() == y.len() && x.iter().zip(y.iter()).all(|((k1, v1), (k2, v2))| k1 == k2 && jeq(v1, v2))
+            x.len() == y.len()
+                && x.iter()
+                    .zip(y.iter())
+                    .all(|((k1, v1), (k2, v2))| k1 == k2 && jeq(v1, v2))
         }
         _ => false,
     }
@@ -777,7 +813,9 @@ fn apply(f: &F, v: &J) -> Result<Vec<J>, String> {
                 let len = chars.len() as i64;
                 let start = a.unwrap_or(0).max(0).min(len);
                 let end = b.unwrap_or(len).max(0).min(len);
-                Ok(vec![J::Str(chars[start as usize..end as usize].iter().collect())])
+                Ok(vec![J::Str(
+                    chars[start as usize..end as usize].iter().collect(),
+                )])
             }
             _ => Err(format!("cannot slice {}", type_of(v))),
         },
@@ -937,7 +975,9 @@ fn call_builtin(name: &str, args: &[F], v: &J) -> Result<Vec<J>, String> {
                 }
                 let cmp = |x: &J, y: &J| -> std::cmp::Ordering {
                     match (x, y) {
-                        (J::Num(a), J::Num(b)) => a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal),
+                        (J::Num(a), J::Num(b)) => {
+                            a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)
+                        }
                         (J::Str(a), J::Str(b)) => a.cmp(b),
                         _ => std::cmp::Ordering::Equal,
                     }

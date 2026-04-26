@@ -48,8 +48,7 @@ fn list_includes_ported_applets() {
     let r = run(&["--list"]);
     assert_eq!(r.rc, 0);
     for name in [
-        "cat", "echo", "false", "hostname", "pwd", "sleep", "true", "uname",
-        "whoami", "yes",
+        "cat", "echo", "false", "hostname", "pwd", "sleep", "true", "uname", "whoami", "yes",
     ] {
         let needle1 = format!("  {name} ");
         let needle2 = format!("  {name}  ");
@@ -206,7 +205,10 @@ fn uname_default_is_kernel_name() {
     assert_eq!(r.rc, 0);
     let s = r.stdout.trim();
     assert!(!s.is_empty());
-    assert!(!s.contains(' '), "default uname should be a single token, got `{s}`");
+    assert!(
+        !s.contains(' '),
+        "default uname should be a single token, got `{s}`"
+    );
 }
 
 #[test]
@@ -277,7 +279,9 @@ fn cat_b_skips_blank_lines() {
 fn cat_missing_file_returns_1() {
     let r = run(&["cat", "this_file_definitely_does_not_exist.txt"]);
     assert_eq!(r.rc, 1);
-    assert!(r.stderr.contains("cat: this_file_definitely_does_not_exist.txt"));
+    assert!(r
+        .stderr
+        .contains("cat: this_file_definitely_does_not_exist.txt"));
 }
 
 #[test]
@@ -322,6 +326,10 @@ fn multicall_alias_is_resolved() {
         .arg(p.to_str().unwrap())
         .output()
         .expect("spawn");
-    assert!(out.status.success(), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+    assert!(
+        out.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
     assert_eq!(String::from_utf8_lossy(&out.stdout), "hello world\n");
 }

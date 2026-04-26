@@ -75,7 +75,10 @@ fn main(argv: &[String]) -> i32 {
                     return 2;
                 }
             },
-            s if s.starts_with('-') && s.len() > 1 && s[1..].chars().all(|c| c.is_ascii_digit()) => {
+            s if s.starts_with('-')
+                && s.len() > 1
+                && s[1..].chars().all(|c| c.is_ascii_digit()) =>
+            {
                 tabs = vec![s[1..].parse().unwrap_or(8)];
                 i += 1;
             }

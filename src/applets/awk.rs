@@ -220,8 +220,10 @@ impl<'a> Lexer<'a> {
                     } else {
                         None
                     };
-                    let multi = ["==", "!=", "<=", ">=", "&&", "||", "++", "--",
-                        "+=", "-=", "*=", "/=", "%=", "^=", "**", "!~"];
+                    let multi = [
+                        "==", "!=", "<=", ">=", "&&", "||", "++", "--", "+=", "-=", "*=", "/=",
+                        "%=", "^=", "**", "!~",
+                    ];
                     if let Some(s) = three.as_deref() {
                         if s == "**=" {
                             out.push(Tok::Op("^=".to_string()));
@@ -393,7 +395,12 @@ enum Stmt {
     If(Expr, Vec<Stmt>, Option<Vec<Stmt>>),
     While(Expr, Vec<Stmt>),
     DoWhile(Vec<Stmt>, Expr),
-    For(Option<Box<Stmt>>, Option<Expr>, Option<Box<Stmt>>, Vec<Stmt>),
+    For(
+        Option<Box<Stmt>>,
+        Option<Expr>,
+        Option<Box<Stmt>>,
+        Vec<Stmt>,
+    ),
     ForIn(String, String, Vec<Stmt>),
     Next,
     Exit(Option<Expr>),
@@ -636,7 +643,10 @@ impl Parser {
                 }
                 "exit" => {
                     self.bump();
-                    let e = if matches!(self.peek(), Tok::Newline | Tok::Semi | Tok::RBrace | Tok::Eof) {
+                    let e = if matches!(
+                        self.peek(),
+                        Tok::Newline | Tok::Semi | Tok::RBrace | Tok::Eof
+                    ) {
                         None
                     } else {
                         Some(self.parse_expr()?)
@@ -654,7 +664,10 @@ impl Parser {
                 "print" => {
                     self.bump();
                     let mut args: Vec<Expr> = Vec::new();
-                    if !matches!(self.peek(), Tok::Newline | Tok::Semi | Tok::RBrace | Tok::Eof) {
+                    if !matches!(
+                        self.peek(),
+                        Tok::Newline | Tok::Semi | Tok::RBrace | Tok::Eof
+                    ) {
                         args.push(self.parse_expr_no_inq()?);
                         while matches!(self.peek(), Tok::Comma) {
                             self.bump();
@@ -818,7 +831,11 @@ impl Parser {
                     other => {
                         // dynamic regex from any other expr: stringify at eval time
                         return Ok(Expr::Bin(
-                            if neg { "!~~".to_string() } else { "~~".to_string() },
+                            if neg {
+                                "!~~".to_string()
+                            } else {
+                                "~~".to_string()
+                            },
                             Box::new(l),
                             Box::new(other),
                         ));
@@ -1051,12 +1068,19 @@ impl Val {
                     return "nan".to_string();
                 }
                 if n.is_infinite() {
-                    return if *n > 0.0 { "inf".to_string() } else { "-inf".to_string() };
+                    return if *n > 0.0 {
+                        "inf".to_string()
+                    } else {
+                        "-inf".to_string()
+                    };
                 }
                 if *n == n.trunc() && n.abs() < 1e16 {
                     return (*n as i64).to_string();
                 }
-                format!("{n:.6}").trim_end_matches('0').trim_end_matches('.').to_string()
+                format!("{n:.6}")
+                    .trim_end_matches('0')
+                    .trim_end_matches('.')
+                    .to_string()
             }
         }
     }
@@ -1105,18 +1129,25 @@ impl Interp {
         s.vars.insert("RS".to_string(), Val::Str("\n".to_string()));
         s.vars.insert("NR".to_string(), Val::Num(0.0));
         s.vars.insert("NF".to_string(), Val::Num(0.0));
-        s.vars.insert("FILENAME".to_string(), Val::Str(String::new()));
+        s.vars
+            .insert("FILENAME".to_string(), Val::Str(String::new()));
         s
     }
 
     fn set_record(&mut self, line: &str) {
-        self.fs = self.vars.get("FS").map(|v| v.to_string_()).unwrap_or_else(|| " ".to_string());
+        self.fs = self
+            .vars
+            .get("FS")
+            .map(|v| v.to_string_())
+            .unwrap_or_else(|| " ".to_string());
         self.fields.clear();
         self.fields.push(line.to_string());
         let split: Vec<String> = if self.fs == " " {
             line.split_whitespace().map(String::from).collect()
         } else if self.fs.chars().count() == 1 {
-            line.split(self.fs.chars().next().unwrap()).map(String::from).collect()
+            line.split(self.fs.chars().next().unwrap())
+                .map(String::from)
+                .collect()
         } else {
             // Treat as regex.
             match Regex::new(&self.fs) {
@@ -1132,7 +1163,11 @@ impl Interp {
     }
 
     fn rebuild_field0(&mut self) {
-        let ofs = self.vars.get("OFS").map(|v| v.to_string_()).unwrap_or_else(|| " ".to_string());
+        let ofs = self
+            .vars
+            .get("OFS")
+            .map(|v| v.to_string_())
+            .unwrap_or_else(|| " ".to_string());
         let parts: Vec<String> = self.fields[1..].to_vec();
         if !self.fields.is_empty() {
             self.fields[0] = parts.join(&ofs);
@@ -1275,7 +1310,11 @@ impl Interp {
     }
 
     fn assign_op(&mut self, op: &str, name: String, rhs: &Expr) -> Result<Val, String> {
-        let cur = self.vars.get(&name).cloned().unwrap_or(Val::Str(String::new()));
+        let cur = self
+            .vars
+            .get(&name)
+            .cloned()
+            .unwrap_or(Val::Str(String::new()));
         let rv = self.eval(rhs)?;
         Ok(self.combine(op, cur, rv))
     }
@@ -1337,7 +1376,9 @@ impl Interp {
                 // Numeric comparison if both look numeric.
                 let both_num = matches!(l, Val::Num(_)) && matches!(r, Val::Num(_));
                 let ord: std::cmp::Ordering = if both_num {
-                    l.to_num().partial_cmp(&r.to_num()).unwrap_or(std::cmp::Ordering::Equal)
+                    l.to_num()
+                        .partial_cmp(&r.to_num())
+                        .unwrap_or(std::cmp::Ordering::Equal)
                 } else {
                     l.to_string_().cmp(&r.to_string_())
                 };
@@ -1383,7 +1424,10 @@ impl Interp {
                 let chars: Vec<char> = s.chars().collect();
                 let start = vals.get(1).map(|v| v.to_num() as i64).unwrap_or(1);
                 let max_len = chars.len() as i64;
-                let len = vals.get(2).map(|v| v.to_num() as i64).unwrap_or(max_len - start + 1);
+                let len = vals
+                    .get(2)
+                    .map(|v| v.to_num() as i64)
+                    .unwrap_or(max_len - start + 1);
                 let lo = (start - 1).max(0).min(max_len) as usize;
                 let hi = ((start - 1 + len).max(0).min(max_len)) as usize;
                 Ok(Val::Str(chars[lo..hi].iter().collect()))
@@ -1403,11 +1447,16 @@ impl Interp {
                 } else {
                     return Err("split: second arg must be an array name".into());
                 };
-                let sep = vals.get(2).map(|v| v.to_string_()).unwrap_or_else(|| self.fs.clone());
+                let sep = vals
+                    .get(2)
+                    .map(|v| v.to_string_())
+                    .unwrap_or_else(|| self.fs.clone());
                 let parts: Vec<String> = if sep == " " {
                     s.split_whitespace().map(String::from).collect()
                 } else if sep.chars().count() == 1 {
-                    s.split(sep.chars().next().unwrap()).map(String::from).collect()
+                    s.split(sep.chars().next().unwrap())
+                        .map(String::from)
+                        .collect()
                 } else {
                     Regex::new(&sep)
                         .map(|rx| rx.split(&s).map(String::from).collect::<Vec<_>>())
@@ -1485,8 +1534,10 @@ impl Interp {
                 if let Some(m) = rx.find(&s) {
                     let rstart = s[..m.start()].chars().count() + 1;
                     let rlength = s[m.start()..m.end()].chars().count();
-                    self.vars.insert("RSTART".to_string(), Val::Num(rstart as f64));
-                    self.vars.insert("RLENGTH".to_string(), Val::Num(rlength as f64));
+                    self.vars
+                        .insert("RSTART".to_string(), Val::Num(rstart as f64));
+                    self.vars
+                        .insert("RLENGTH".to_string(), Val::Num(rlength as f64));
                     Ok(Val::Num(rstart as f64))
                 } else {
                     self.vars.insert("RSTART".to_string(), Val::Num(0.0));
@@ -1495,24 +1546,46 @@ impl Interp {
                 }
             }
             "toupper" => Ok(Val::Str(
-                vals.first().map(|v| v.to_string_()).unwrap_or_default().to_uppercase(),
+                vals.first()
+                    .map(|v| v.to_string_())
+                    .unwrap_or_default()
+                    .to_uppercase(),
             )),
             "tolower" => Ok(Val::Str(
-                vals.first().map(|v| v.to_string_()).unwrap_or_default().to_lowercase(),
+                vals.first()
+                    .map(|v| v.to_string_())
+                    .unwrap_or_default()
+                    .to_lowercase(),
             )),
-            "int" => Ok(Val::Num(vals.first().map(|v| v.to_num()).unwrap_or(0.0).trunc())),
-            "sqrt" => Ok(Val::Num(vals.first().map(|v| v.to_num()).unwrap_or(0.0).sqrt())),
-            "log" => Ok(Val::Num(vals.first().map(|v| v.to_num()).unwrap_or(0.0).ln())),
-            "exp" => Ok(Val::Num(vals.first().map(|v| v.to_num()).unwrap_or(0.0).exp())),
-            "sin" => Ok(Val::Num(vals.first().map(|v| v.to_num()).unwrap_or(0.0).sin())),
-            "cos" => Ok(Val::Num(vals.first().map(|v| v.to_num()).unwrap_or(0.0).cos())),
+            "int" => Ok(Val::Num(
+                vals.first().map(|v| v.to_num()).unwrap_or(0.0).trunc(),
+            )),
+            "sqrt" => Ok(Val::Num(
+                vals.first().map(|v| v.to_num()).unwrap_or(0.0).sqrt(),
+            )),
+            "log" => Ok(Val::Num(
+                vals.first().map(|v| v.to_num()).unwrap_or(0.0).ln(),
+            )),
+            "exp" => Ok(Val::Num(
+                vals.first().map(|v| v.to_num()).unwrap_or(0.0).exp(),
+            )),
+            "sin" => Ok(Val::Num(
+                vals.first().map(|v| v.to_num()).unwrap_or(0.0).sin(),
+            )),
+            "cos" => Ok(Val::Num(
+                vals.first().map(|v| v.to_num()).unwrap_or(0.0).cos(),
+            )),
             "atan2" => Ok(Val::Num(
-                vals.first().map(|v| v.to_num()).unwrap_or(0.0).atan2(
-                    vals.get(1).map(|v| v.to_num()).unwrap_or(0.0),
-                ),
+                vals.first()
+                    .map(|v| v.to_num())
+                    .unwrap_or(0.0)
+                    .atan2(vals.get(1).map(|v| v.to_num()).unwrap_or(0.0)),
             )),
             "rand" => {
-                self.rng_state = self.rng_state.wrapping_mul(6_364_136_223_846_793_005).wrapping_add(1);
+                self.rng_state = self
+                    .rng_state
+                    .wrapping_mul(6_364_136_223_846_793_005)
+                    .wrapping_add(1);
                 let v = (self.rng_state >> 33) as f64 / (1u64 << 31) as f64;
                 Ok(Val::Num(v))
             }
@@ -1525,11 +1598,15 @@ impl Interp {
             "system" => {
                 let cmd = vals.first().map(|v| v.to_string_()).unwrap_or_default();
                 let status = if cfg!(windows) {
-                    std::process::Command::new("cmd").args(["/C", &cmd]).status()
+                    std::process::Command::new("cmd")
+                        .args(["/C", &cmd])
+                        .status()
                 } else {
                     std::process::Command::new("sh").args(["-c", &cmd]).status()
                 };
-                Ok(Val::Num(status.ok().and_then(|s| s.code()).unwrap_or(1) as f64))
+                Ok(Val::Num(
+                    status.ok().and_then(|s| s.code()).unwrap_or(1) as f64
+                ))
             }
             other => Err(format!("unknown function: {other}")),
         }
@@ -1542,8 +1619,16 @@ impl Interp {
                 Ok(Flow::Normal)
             }
             Stmt::Print(args) => {
-                let ofs = self.vars.get("OFS").map(|v| v.to_string_()).unwrap_or_else(|| " ".to_string());
-                let ors = self.vars.get("ORS").map(|v| v.to_string_()).unwrap_or_else(|| "\n".to_string());
+                let ofs = self
+                    .vars
+                    .get("OFS")
+                    .map(|v| v.to_string_())
+                    .unwrap_or_else(|| " ".to_string());
+                let ors = self
+                    .vars
+                    .get("ORS")
+                    .map(|v| v.to_string_())
+                    .unwrap_or_else(|| "\n".to_string());
                 let stdout = std::io::stdout();
                 let mut out = stdout.lock();
                 if args.is_empty() {
@@ -1708,7 +1793,10 @@ fn awk_sprintf(fmt: &str, vals: &[Val]) -> String {
                 out.push('%');
                 continue;
             }
-            let val = vals.get(arg_idx).cloned().unwrap_or(Val::Str(String::new()));
+            let val = vals
+                .get(arg_idx)
+                .cloned()
+                .unwrap_or(Val::Str(String::new()));
             arg_idx += 1;
             // Hand off to a small printf-like.
             out.push_str(&awk_one(spec, conv, &val));
@@ -1813,13 +1901,22 @@ fn awk_one(spec: &str, conv: char, val: &Val) -> String {
                 Some(p) if p > 0 => format!("{:.*}", p, val.to_num()),
                 _ => format!("{}", val.to_num()),
             };
-            if conv == 'G' { s.to_uppercase() } else { s }
+            if conv == 'G' {
+                s.to_uppercase()
+            } else {
+                s
+            }
         }
         's' => match precision {
             Some(p) => val.to_string_().chars().take(p).collect(),
             None => val.to_string_(),
         },
-        'c' => val.to_string_().chars().next().map(|c| c.to_string()).unwrap_or_default(),
+        'c' => val
+            .to_string_()
+            .chars()
+            .next()
+            .map(|c| c.to_string())
+            .unwrap_or_default(),
         _ => val.to_string_(),
     };
     let mut signed = body;
@@ -1835,7 +1932,10 @@ fn awk_one(spec: &str, conv: char, val: &Val) -> String {
         if left {
             return format!("{signed}{:width$}", "", width = pad);
         }
-        if zero && precision.is_none() && matches!(conv, 'd' | 'i' | 'o' | 'x' | 'X' | 'f' | 'g' | 'e') {
+        if zero
+            && precision.is_none()
+            && matches!(conv, 'd' | 'i' | 'o' | 'x' | 'X' | 'f' | 'g' | 'e')
+        {
             let (sign, rest) = if signed.starts_with('-') || signed.starts_with('+') {
                 (&signed[..1], &signed[1..])
             } else {
@@ -2071,13 +2171,18 @@ fn main(argv: &[String]) -> i32 {
 
     // If the program has only BEGIN/END rules, don't read stdin — that
     // would hang on an interactive terminal. POSIX awk does the same.
-    let has_main_rule = rules.iter().any(|r| !matches!(r.pattern, PatternKind::Begin | PatternKind::End));
+    let has_main_rule = rules
+        .iter()
+        .any(|r| !matches!(r.pattern, PatternKind::Begin | PatternKind::End));
 
     let mut sources: Vec<(String, Box<dyn BufRead>)> = Vec::new();
     if !has_main_rule {
         // skip reading
     } else if files.is_empty() {
-        sources.push(("-".to_string(), Box::new(BufReader::new(io::stdin().lock()))));
+        sources.push((
+            "-".to_string(),
+            Box::new(BufReader::new(io::stdin().lock())),
+        ));
     } else {
         for f in &files {
             if let Some((k, v)) = parse_var_assign(f) {
@@ -2100,7 +2205,9 @@ fn main(argv: &[String]) -> i32 {
 
     let mut exit_code: Option<i32> = None;
     'outer: for (name, mut src) in sources {
-        interp.vars.insert("FILENAME".to_string(), Val::Str(name.clone()));
+        interp
+            .vars
+            .insert("FILENAME".to_string(), Val::Str(name.clone()));
         interp.filename = name;
         let mut buf = String::new();
         if src.read_to_string(&mut buf).is_err() {
@@ -2116,7 +2223,9 @@ fn main(argv: &[String]) -> i32 {
             // Strip trailing CR so Windows-encoded text doesn't pollute $0.
             let raw: &str = raw.strip_suffix('\r').unwrap_or(raw);
             interp.nr += 1;
-            interp.vars.insert("NR".to_string(), Val::Num(interp.nr as f64));
+            interp
+                .vars
+                .insert("NR".to_string(), Val::Num(interp.nr as f64));
             interp.set_record(raw);
             match run_rules(&mut rules, &mut interp) {
                 Ok(Flow::Exit(c)) => {

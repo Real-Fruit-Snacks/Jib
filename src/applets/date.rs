@@ -19,15 +19,30 @@ pub const APPLET: Applet = Applet {
 };
 
 const MONTH_FULL: [&str; 12] = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
 ];
 const MONTH_ABBR: [&str; 12] = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 const DAY_FULL: [&str; 7] = [
-    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
 ];
 const DAY_ABBR: [&str; 7] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -70,7 +85,20 @@ fn from_unix_secs(secs: i64, is_utc: bool) -> DateTime {
     let dow = ((days % 7 + 4) % 7 + 7) % 7;
     // Day of year.
     let leap = (y % 4 == 0 && y % 100 != 0) || (y % 400 == 0);
-    let mdays = [31, if leap { 29 } else { 28 }, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    let mdays = [
+        31,
+        if leap { 29 } else { 28 },
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31,
+    ];
     let mut doy = d as i64;
     for i in 0..(m as usize - 1) {
         doy += mdays[i];
@@ -197,7 +225,12 @@ fn strftime(dt: &DateTime, fmt: &str) -> String {
                 }
                 b'T' => out.push_str(&format!("{:02}:{:02}:{:02}", dt.hour, dt.minute, dt.second)),
                 b'R' => out.push_str(&format!("{:02}:{:02}", dt.hour, dt.minute)),
-                b'D' => out.push_str(&format!("{:02}/{:02}/{:02}", dt.month, dt.day, dt.year.rem_euclid(100))),
+                b'D' => out.push_str(&format!(
+                    "{:02}/{:02}/{:02}",
+                    dt.month,
+                    dt.day,
+                    dt.year.rem_euclid(100)
+                )),
                 b'F' => out.push_str(&format!("{:04}-{:02}-{:02}", dt.year, dt.month, dt.day)),
                 b'z' => {
                     let sign = if dt.utc_offset_secs >= 0 { '+' } else { '-' };
@@ -302,7 +335,10 @@ fn main(argv: &[String]) -> i32 {
     // Pick the timestamp.
     let secs: i64 = if let Some(rp) = &r_arg {
         match std::fs::metadata(rp).and_then(|m| m.modified()) {
-            Ok(t) => t.duration_since(UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0),
+            Ok(t) => t
+                .duration_since(UNIX_EPOCH)
+                .map(|d| d.as_secs() as i64)
+                .unwrap_or(0),
             Err(e) => {
                 err_path("date", rp, &e);
                 return 1;
@@ -338,7 +374,10 @@ fn main(argv: &[String]) -> i32 {
     } else if let Some(spec) = &iso_spec {
         match spec.as_str() {
             "date" => format!("{:04}-{:02}-{:02}", dt.year, dt.month, dt.day),
-            "hours" => format!("{:04}-{:02}-{:02}T{:02}+0000", dt.year, dt.month, dt.day, dt.hour),
+            "hours" => format!(
+                "{:04}-{:02}-{:02}T{:02}+0000",
+                dt.year, dt.month, dt.day, dt.hour
+            ),
             "minutes" => format!(
                 "{:04}-{:02}-{:02}T{:02}:{:02}+0000",
                 dt.year, dt.month, dt.day, dt.hour, dt.minute

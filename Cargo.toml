@@ -19,6 +19,25 @@ path = "src/main.rs"
 name = "jib"
 path = "src/lib.rs"
 
+# Clippy lints we allow for v0.1.0 — all stylistic, none are correctness
+# issues. Tracked as one bulk follow-up; keeping `-D warnings` on so any
+# *new* lint stays surfaced.
+[lints.clippy]
+bind_instead_of_map = "allow"
+if_same_then_else = "allow"
+manual_checked_ops = "allow"
+manual_pattern_char_comparison = "allow"
+manual_retain = "allow"
+match_like_matches_macro = "allow"
+needless_range_loop = "allow"
+needless_return = "allow"
+nonminimal_bool = "allow"
+only_used_in_recursion = "allow"
+single_match = "allow"
+too_many_arguments = "allow"
+type_complexity = "allow"
+unnecessary_cast = "allow"
+
 [features]
 # `full` is the default and re-exports every applet group. Build a slim
 # binary (39 POSIX coreutils, no engines/archives/hashing/network/json) with:

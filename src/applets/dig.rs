@@ -159,7 +159,10 @@ fn parse_response(buf: &[u8], short: bool) -> Vec<String> {
             28 if rdlen == 16 => {
                 let mut parts = Vec::new();
                 for i in (0..16).step_by(2) {
-                    parts.push(format!("{:x}", u16::from_be_bytes([rdata[i], rdata[i + 1]])));
+                    parts.push(format!(
+                        "{:x}",
+                        u16::from_be_bytes([rdata[i], rdata[i + 1]])
+                    ));
                 }
                 parts.join(":")
             }
@@ -185,7 +188,11 @@ fn parse_response(buf: &[u8], short: bool) -> Vec<String> {
         if short {
             out.push(value);
         } else {
-            out.push(format!("{name}\t{ttl}\tIN\t{}\t{}", code_to_type(rtype), value));
+            out.push(format!(
+                "{name}\t{ttl}\tIN\t{}\t{}",
+                code_to_type(rtype),
+                value
+            ));
         }
     }
     out

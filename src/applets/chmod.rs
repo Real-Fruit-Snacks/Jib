@@ -177,7 +177,10 @@ fn main(argv: &[String]) -> i32 {
             break;
         }
         // Stop flag parsing at anything that isn't a recognized chmod flag.
-        if !a[1..].chars().all(|c| matches!(c, 'R' | 'r' | 'v' | 'c' | 'f')) {
+        if !a[1..]
+            .chars()
+            .all(|c| matches!(c, 'R' | 'r' | 'v' | 'c' | 'f'))
+        {
             break;
         }
         for ch in a[1..].chars() {
@@ -208,10 +211,7 @@ fn main(argv: &[String]) -> i32 {
                 err_path(
                     "chmod",
                     path,
-                    &std::io::Error::new(
-                        std::io::ErrorKind::NotFound,
-                        "No such file or directory",
-                    ),
+                    &std::io::Error::new(std::io::ErrorKind::NotFound, "No such file or directory"),
                 );
             }
             rc = 1;

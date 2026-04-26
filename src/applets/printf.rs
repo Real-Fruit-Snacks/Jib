@@ -181,9 +181,17 @@ fn render(out: &mut String, spec: &Spec, conv: char, arg: &str) {
                 Some(0) | None => format!("{v}"),
                 Some(p) => format!("{:.*}", p, v),
             };
-            if conv == 'G' { s.to_uppercase() } else { s }
+            if conv == 'G' {
+                s.to_uppercase()
+            } else {
+                s
+            }
         }
-        'c' => arg.chars().next().map(|c| c.to_string()).unwrap_or_default(),
+        'c' => arg
+            .chars()
+            .next()
+            .map(|c| c.to_string())
+            .unwrap_or_default(),
         's' => match spec.precision {
             Some(p) => arg.chars().take(p).collect::<String>(),
             None => arg.to_string(),

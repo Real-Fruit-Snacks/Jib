@@ -170,7 +170,10 @@ fn main(argv: &[String]) -> i32 {
             match take_value("-t", &args, i) {
                 Some((v, ni)) => {
                     if v.chars().count() != 1 {
-                        err("sort", &format!("separator must be a single character: '{v}'"));
+                        err(
+                            "sort",
+                            &format!("separator must be a single character: '{v}'"),
+                        );
                         return 2;
                     }
                     separator = v.chars().next();
@@ -288,7 +291,11 @@ fn main(argv: &[String]) -> i32 {
     let mut keyed: Vec<(Key, String)> = lines.into_iter().map(|s| (key_fn(&s), s)).collect();
     keyed.sort_by(|a, b| {
         let c = cmp_key(&a.0, &b.0);
-        if reverse { c.reverse() } else { c }
+        if reverse {
+            c.reverse()
+        } else {
+            c
+        }
     });
 
     let final_lines: Vec<String> = if unique {

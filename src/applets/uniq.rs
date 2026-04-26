@@ -17,7 +17,13 @@ pub const APPLET: Applet = Applet {
     main,
 };
 
-fn key(line: &str, skip_fields: usize, skip_chars: usize, width: Option<usize>, ic: bool) -> String {
+fn key(
+    line: &str,
+    skip_fields: usize,
+    skip_chars: usize,
+    width: Option<usize>,
+    ic: bool,
+) -> String {
     let chars: Vec<char> = line.chars().collect();
     let mut i = 0usize;
     let mut skipped = 0usize;
@@ -128,7 +134,11 @@ fn main(argv: &[String]) -> i32 {
                 },
                 None => return 2,
             },
-            s if s.starts_with('-') && s != "-" && s.len() > 1 && s[1..].chars().all(|c| c.is_ascii_digit()) => {
+            s if s.starts_with('-')
+                && s != "-"
+                && s.len() > 1
+                && s[1..].chars().all(|c| c.is_ascii_digit()) =>
+            {
                 skip_fields = s[1..].parse().unwrap_or(0);
                 i += 1;
             }
@@ -137,8 +147,14 @@ fn main(argv: &[String]) -> i32 {
     }
 
     let positional: Vec<String> = args[i..].to_vec();
-    let input = positional.first().cloned().unwrap_or_else(|| "-".to_string());
-    let output = positional.get(1).cloned().unwrap_or_else(|| "-".to_string());
+    let input = positional
+        .first()
+        .cloned()
+        .unwrap_or_else(|| "-".to_string());
+    let output = positional
+        .get(1)
+        .cloned()
+        .unwrap_or_else(|| "-".to_string());
 
     let reader: Box<dyn BufRead> = if input == "-" {
         Box::new(BufReader::new(io::stdin().lock()))
@@ -163,7 +179,12 @@ fn main(argv: &[String]) -> i32 {
         }
     };
 
-    let emit = |out: &mut dyn Write, line: &str, cnt: usize, count: bool, dup_only: bool, uniq_only: bool| {
+    let emit = |out: &mut dyn Write,
+                line: &str,
+                cnt: usize,
+                count: bool,
+                dup_only: bool,
+                uniq_only: bool| {
         if dup_only && cnt < 2 {
             return;
         }

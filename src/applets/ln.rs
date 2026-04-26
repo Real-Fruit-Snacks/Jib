@@ -85,7 +85,10 @@ fn main(argv: &[String]) -> i32 {
         if !a.starts_with('-') || a.len() < 2 || a == "-" {
             break;
         }
-        if !a[1..].chars().all(|c| matches!(c, 's' | 'f' | 'v' | 'r' | 'T')) {
+        if !a[1..]
+            .chars()
+            .all(|c| matches!(c, 's' | 'f' | 'v' | 'r' | 'T'))
+        {
             err("ln", &format!("invalid option: {a}"));
             return 2;
         }
@@ -120,14 +123,15 @@ fn main(argv: &[String]) -> i32 {
             .map(|s| s.to_os_string())
             .unwrap_or_else(|| target.clone().into());
         pairs.push((target, PathBuf::from(".").join(basename)));
-    } else if positional.len() == 2
-        && (no_target_dir || !Path::new(&positional[1]).is_dir())
-    {
+    } else if positional.len() == 2 && (no_target_dir || !Path::new(&positional[1]).is_dir()) {
         pairs.push((positional[0].clone(), PathBuf::from(&positional[1])));
     } else {
         let dest = PathBuf::from(positional.last().unwrap());
         if !dest.is_dir() {
-            err("ln", &format!("target '{}' is not a directory", dest.display()));
+            err(
+                "ln",
+                &format!("target '{}' is not a directory", dest.display()),
+            );
             return 1;
         }
         for t in &positional[..positional.len() - 1] {
@@ -158,8 +162,13 @@ fn main(argv: &[String]) -> i32 {
             }
         }
         let effective_target: PathBuf = if symbolic && relative {
-            let abs = Path::new(&target).canonicalize().unwrap_or_else(|_| Path::new(&target).to_path_buf());
-            let link_dir = link.parent().map(Path::to_path_buf).unwrap_or_else(|| PathBuf::from("."));
+            let abs = Path::new(&target)
+                .canonicalize()
+                .unwrap_or_else(|_| Path::new(&target).to_path_buf());
+            let link_dir = link
+                .parent()
+                .map(Path::to_path_buf)
+                .unwrap_or_else(|| PathBuf::from("."));
             let link_dir_abs = link_dir.canonicalize().unwrap_or(link_dir);
             relative_to(&abs, &link_dir_abs)
         } else {
@@ -175,7 +184,11 @@ fn main(argv: &[String]) -> i32 {
             Ok(()) => {
                 if verbose {
                     let arrow = if symbolic { " -> " } else { " => " };
-                    println!("'{}'{arrow}'{}'", link.display(), effective_target.display());
+                    println!(
+                        "'{}'{arrow}'{}'",
+                        link.display(),
+                        effective_target.display()
+                    );
                 }
             }
             Err(e) => {

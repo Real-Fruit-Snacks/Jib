@@ -44,7 +44,7 @@ Python implementation.
 | stat       | ✅ | -c/-t/-L; full %a/%A/%n/%s etc |
 | tail       | ✅ | -f via polling |
 | tee        | ✅ | |
-| touch      | 🟡 | -t/-r/-d work; atime separately set is best-effort (Rust stable lacks `set_accessed`) |
+| touch      | ✅ | -t/-r/-d/-a/-m via the `filetime` crate |
 | tr         | ✅ | -d/-s/-c/-t with ranges and POSIX classes |
 | uname      | 🟡 | -s/-n/-m/-o; -r/-v/-p return "unknown" on stable Rust without libc |
 | uniq       | ✅ | -c/-d/-u/-i, -f/-s/-w |

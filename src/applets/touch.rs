@@ -2,12 +2,15 @@
 //!
 //! Supports `-c` no-create, `-a` atime-only, `-m` mtime-only, `-r REF`
 //! reference file, `-t STAMP` POSIX `[[CC]YY]MMDDhhmm[.ss]`, and a small
-//! subset of ISO-8601 forms for `-d STR`. We deliberately don't pull in
+//! subset of ISO-8601 forms for `-d STR`. atime and mtime are both
+//! settable via the `filetime` crate. We deliberately don't pull in
 //! `chrono` — `date` is the heavyweight applet that needs full parsing.
 
 use std::fs::OpenOptions;
 use std::path::Path;
 use std::time::{Duration, SystemTime};
+
+use filetime::FileTime;
 
 use crate::common::{err, err_path};
 use crate::registry::Applet;
@@ -160,10 +163,12 @@ fn unix_to_systime(secs: i64) -> SystemTime {
 }
 
 fn set_times(path: &Path, atime: SystemTime, mtime: SystemTime) -> std::io::Result<()> {
-    let f = OpenOptions::new().write(true).open(path)?;
-    f.set_modified(mtime)?;
-    let _ = (f, atime); // set_accessed is nightly; skip atime for now (TODO).
-    Ok(())
+    // The `filetime` crate wraps the platform-specific syscalls
+    // (utimensat on Linux/macOS, SetFileTime on Windows) so atime and
+    // mtime are both set atomically without needing a writable handle.
+    let at = FileTime::from_system_time(atime);
+    let mt = FileTime::from_system_time(mtime);
+    filetime::set_file_times(path, at, mt)
 }
 
 fn main(argv: &[String]) -> i32 {

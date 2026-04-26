@@ -44,7 +44,7 @@ unnecessary_cast = "allow"
 #   cargo build --release --no-default-features --features slim
 default = ["full"]
 full = ["slim", "archives", "hashing", "disk", "network", "json", "extras"]
-slim = ["dep:regex"]
+slim = ["dep:regex", "dep:filetime"]
 archives = ["dep:flate2", "dep:tar", "dep:zip"]
 hashing = ["dep:md-5", "dep:sha1", "dep:sha2"]
 disk = []
@@ -55,6 +55,7 @@ extras = ["dep:similar"]
 [dependencies]
 gethostname = "1"
 regex = { version = "1", optional = true }
+filetime = { version = "0.2", optional = true }
 md-5 = { version = "0.10", optional = true }
 sha1 = { version = "0.10", optional = true }
 sha2 = { version = "0.10", optional = true }

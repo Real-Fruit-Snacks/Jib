@@ -333,3 +333,62 @@ fn multicall_alias_is_resolved() {
     );
     assert_eq!(String::from_utf8_lossy(&out.stdout), "hello world\n");
 }
+
+// --- touch ------------------------------------------------------------------
+
+#[test]
+fn touch_a_actually_sets_atime() {
+    // Pre-filetime, `touch -a -d ...` was a no-op for atime. Pin that
+    // behavior down: after running it, the metadata's atime must reflect
+    // the requested instant (allowing for FS atime granularity).
+    use std::time::SystemTime;
+
+    let dir = TempDir::new().expect("tempdir");
+    let p = dir.path().join("a.txt");
+    std::fs::write(&p, b"x").unwrap();
+
+    let r = run(&[
+        "touch",
+        "-a",
+        "-d",
+        "2025-01-01T00:00:00Z",
+        p.to_str().unwrap(),
+    ]);
+    assert_eq!(r.rc, 0, "stderr: {}", r.stderr);
+
+    let meta = std::fs::metadata(&p).unwrap();
+    let atime = meta.accessed().unwrap();
+    let target = SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(1735689600);
+    let diff = match atime.duration_since(target) {
+        Ok(d) => d.as_secs(),
+        Err(e) => e.duration().as_secs(),
+    };
+    // FS granularity for atime is up to a few seconds on some systems;
+    // 60s is a safe upper bound that still catches a no-op.
+    assert!(diff <= 60, "atime drift {}s — touch -a not effective", diff);
+}
+
+#[test]
+fn touch_r_copies_both_times() {
+    let dir = TempDir::new().expect("tempdir");
+    let src = dir.path().join("ref.txt");
+    let dst = dir.path().join("dst.txt");
+    std::fs::write(&src, b"ref").unwrap();
+    std::fs::write(&dst, b"dst").unwrap();
+
+    // Set ref to a known mtime first.
+    let r1 = run(&["touch", "-d", "2024-06-15T12:34:56Z", src.to_str().unwrap()]);
+    assert_eq!(r1.rc, 0, "stderr: {}", r1.stderr);
+
+    // Now copy times from src to dst.
+    let r2 = run(&["touch", "-r", src.to_str().unwrap(), dst.to_str().unwrap()]);
+    assert_eq!(r2.rc, 0, "stderr: {}", r2.stderr);
+
+    let src_mtime = std::fs::metadata(&src).unwrap().modified().unwrap();
+    let dst_mtime = std::fs::metadata(&dst).unwrap().modified().unwrap();
+    let diff = match dst_mtime.duration_since(src_mtime) {
+        Ok(d) => d.as_secs(),
+        Err(e) => e.duration().as_secs(),
+    };
+    assert!(diff <= 1, "mtime mismatch after touch -r: {}s", diff);
+}

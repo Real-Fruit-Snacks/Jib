@@ -1,22 +1,22 @@
 [package]
-name = "mainsail"
+name = "jib"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.75"
-description = "A BusyBox-style multi-call binary in Rust — Unix utilities in one executable, native on Linux, Windows, and macOS."
+description = "A BusyBox-style multi-call binary in Rust — 73 Unix utilities in one executable. Sister project to Real-Fruit-Snacks/mainsail."
 license = "MIT"
 authors = ["Matt"]
-repository = "https://github.com/Real-Fruit-Snacks/mainsail"
+repository = "https://github.com/Real-Fruit-Snacks/jib"
 readme = "README.md"
 categories = ["command-line-utilities"]
 keywords = ["busybox", "coreutils", "multi-call", "cli", "utilities"]
 
 [[bin]]
-name = "mainsail"
+name = "jib"
 path = "src/main.rs"
 
 [lib]
-name = "mainsail"
+name = "jib"
 path = "src/lib.rs"
 
 [features]

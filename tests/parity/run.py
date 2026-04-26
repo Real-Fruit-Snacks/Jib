@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Python <-> Rust parity diff harness for mainsail.
+"""Python (mainsail) <-> Rust (jib) parity diff harness.
 
-Runs every test case in `manifest.toml` (or `manifest.json` as a fallback)
-against both implementations and reports stdout/stderr/rc differences.
+Runs every test case in the inline manifest against both implementations
+and reports stdout/rc differences.
 
 Usage:
-    python tests/parity/run.py [--rust BIN] [--filter SUBSTR] [--update-snapshot]
+    python tests/parity/run.py [--rust BIN] [--filter SUBSTR]
 
-The default Rust binary path is `target/release/mainsail(.exe)`. The Python
+The default Rust binary path is `target/release/jib(.exe)`. The Python
 mainsail is loaded from `tests/parity/mainsail-python/` (cloned as part of
 the harness setup). Both implementations are invoked through their CLI;
 stdin is fed from the case's `input` field if present.
@@ -195,6 +195,10 @@ def run_python(case: Case, workdir: Path) -> tuple[int, bytes, bytes]:
 
 
 def run_rust(rust_bin: Path, case: Case, workdir: Path) -> tuple[int, bytes, bytes]:
+    # The Rust binary's program name is `jib`; the Python module is
+    # `mainsail`. The applet names on the inside are identical, so we just
+    # invoke `<bin> <applet> [args...]` against both implementations and
+    # diff stdout. Each case's `args[0]` is the applet name.
     proc = subprocess.run(
         [str(rust_bin), *case.args],
         input=case.input,
@@ -242,14 +246,14 @@ def main() -> int:
         rust_bin = Path(args.rust)
     else:
         candidates = [
-            REPO_ROOT / "target" / "release" / "mainsail.exe",
-            REPO_ROOT / "target" / "release" / "mainsail",
-            REPO_ROOT / "target" / "debug" / "mainsail.exe",
-            REPO_ROOT / "target" / "debug" / "mainsail",
+            REPO_ROOT / "target" / "release" / "jib.exe",
+            REPO_ROOT / "target" / "release" / "jib",
+            REPO_ROOT / "target" / "debug" / "jib.exe",
+            REPO_ROOT / "target" / "debug" / "jib",
         ]
         rust_bin = next((c for c in candidates if c.exists()), None)
         if rust_bin is None:
-            print("error: Rust mainsail not built; run `cargo build --release` first", file=sys.stderr)
+            print("error: Rust binary not built; run `cargo build --release` first", file=sys.stderr)
             return 2
 
     cases = load_manifest()

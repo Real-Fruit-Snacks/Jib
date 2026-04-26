@@ -1,6 +1,6 @@
 <div align="center">
 
-# mainsail-rs
+# jib
 
 ![Rust](https://img.shields.io/badge/language-Rust-dea584.svg)
 ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey)
@@ -8,11 +8,11 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Tests](https://img.shields.io/badge/tests-29%20unit%20%2B%2076%20parity-brightgreen.svg)
 
-A BusyBox-style multi-call binary in Rust — **73 Unix utilities**, one ~2 MB executable, native on Linux, Windows, and macOS. A Rust port of [Real-Fruit-Snacks/mainsail](https://github.com/Real-Fruit-Snacks/mainsail) (Python).
+A BusyBox-style multi-call binary in Rust — **73 Unix utilities**, one ~2 MB executable, native on Linux, Windows, and macOS. Sister project to [Real-Fruit-Snacks/mainsail](https://github.com/Real-Fruit-Snacks/mainsail) (Python), with a verified-parity test harness.
 
-[Download Latest](https://github.com/Real-Fruit-Snacks/mainsail-rs/releases/latest)
+[Download Latest](https://github.com/Real-Fruit-Snacks/jib/releases/latest)
 &nbsp;·&nbsp;
-[GitHub Pages](https://real-fruit-snacks.github.io/mainsail-rs/)
+[GitHub Pages](https://real-fruit-snacks.github.io/jib/)
 &nbsp;·&nbsp;
 [Parity tracker](PARITY.md)
 
@@ -26,25 +26,25 @@ A BusyBox-style multi-call binary in Rust — **73 Unix utilities**, one ~2 MB e
 
 ```bash
 # Linux (glibc — Ubuntu, Debian, RHEL, …)
-curl -LO https://github.com/Real-Fruit-Snacks/mainsail-rs/releases/latest/download/mainsail-linux-x64
-chmod +x mainsail-linux-x64
-./mainsail-linux-x64 --version
+curl -LO https://github.com/Real-Fruit-Snacks/jib/releases/latest/download/jib-linux-x64
+chmod +x jib-linux-x64
+./jib-linux-x64 --version
 ```
 
 **From source** — Rust 1.75+:
 
 ```bash
-git clone https://github.com/Real-Fruit-Snacks/mainsail-rs.git
-cd mainsail-rs
+git clone https://github.com/Real-Fruit-Snacks/jib.git
+cd jib
 cargo build --release
-./target/release/mainsail --list
+./target/release/jib --list
 ```
 
 **Wire up multi-call dispatch** — symlink (or hardlink) the binary to any applet name and call it directly:
 
 ```bash
-ln -s mainsail ls && ./ls -la                # multi-call: argv[0] basename
-ln -s mainsail cat && echo hi | ./cat        # works for every applet
+ln -s jib ls && ./ls -la                # multi-call: argv[0] basename
+ln -s jib cat && echo hi | ./cat        # works for every applet
 ```
 
 ---
@@ -53,14 +53,14 @@ ln -s mainsail cat && echo hi | ./cat        # works for every applet
 
 Every release tag (`v0.x.x`) ships **12 native binaries** built and verified by GitHub Actions:
 
-| Target                           | Full _(73 applets)_                 | Slim _(34 applets — POSIX coreutils)_     |
-|----------------------------------|-------------------------------------|-------------------------------------------|
-| Linux x86_64 (glibc 2.35+)       | `mainsail-linux-x64`                | `mainsail-linux-x64-slim`                 |
-| Linux x86_64 **musl** (Alpine)   | `mainsail-linux-x64-musl`           | _(use full or build slim locally)_        |
-| Linux ARM64 (glibc)              | `mainsail-linux-arm64`              | `mainsail-linux-arm64-slim`               |
-| Windows x86_64                   | `mainsail-windows-x64.exe`          | `mainsail-windows-x64-slim.exe`           |
-| Windows ARM64                    | `mainsail-windows-arm64.exe`        | `mainsail-windows-arm64-slim.exe`         |
-| macOS ARM64 (Apple Silicon)      | `mainsail-macos-arm64`              | `mainsail-macos-arm64-slim`               |
+| Target                           | Full _(73 applets)_       | Slim _(34 applets — POSIX coreutils)_ |
+|----------------------------------|---------------------------|---------------------------------------|
+| Linux x86_64 (glibc 2.35+)       | `jib-linux-x64`           | `jib-linux-x64-slim`                  |
+| Linux x86_64 **musl** (Alpine)   | `jib-linux-x64-musl`      | _(use full or build slim locally)_    |
+| Linux ARM64 (glibc)              | `jib-linux-arm64`         | `jib-linux-arm64-slim`                |
+| Windows x86_64                   | `jib-windows-x64.exe`     | `jib-windows-x64-slim.exe`            |
+| Windows ARM64                    | `jib-windows-arm64.exe`   | `jib-windows-arm64-slim.exe`          |
+| macOS ARM64 (Apple Silicon)      | `jib-macos-arm64`         | `jib-macos-arm64-slim`                |
 
 Drop any binary anywhere on `PATH` and run.
 
@@ -82,25 +82,25 @@ Feature groups: `slim` (39 POSIX core minus 5 engines = 34), `extras` (19 BusyBo
 
 ### One binary, seventy-three utilities
 
-Every common POSIX tool you'd reach for in a shell pipeline — plus `jq` for JSON, `http` for HTTP, `dig` for DNS, `nc` for TCP, and the BusyBox parity gap-fillers (`dd`, `od`, `hexdump`, `diff`, `join`, `fmt`, …). Dispatch via `mainsail <applet>` or symlink/hardlink to call the applet directly.
+Every common POSIX tool you'd reach for in a shell pipeline — plus `jq` for JSON, `http` for HTTP, `dig` for DNS, `nc` for TCP, and the BusyBox parity gap-fillers (`dd`, `od`, `hexdump`, `diff`, `join`, `fmt`, …). Dispatch via `jib <applet>` or symlink/hardlink to call the applet directly.
 
 ```bash
-mainsail ls -la                           # GNU-style flags
-mainsail cat file.txt | mainsail grep -C 2 pattern
-mainsail find . -name '*.rs' -size +1k -mtime -7
-mainsail seq 100 | mainsail sort -rn | mainsail head -5
+jib ls -la                           # GNU-style flags
+jib cat file.txt | jib grep -C 2 pattern
+jib find . -name '*.rs' -size +1k -mtime -7
+jib seq 100 | jib sort -rn | jib head -5
 ```
 
 ### Native Windows
 
-No WSL, no Cygwin, no git-bash. `mainsail.exe` runs on bare Windows and recognises Windows-native command names as aliases.
+No WSL, no Cygwin, no git-bash. `jib.exe` runs on bare Windows and recognises Windows-native command names as aliases.
 
 ```cmd
-mainsail dir .                           :: == ls
-mainsail type file.txt                   :: == cat
-mainsail copy a.txt b.txt                :: == cp
-mainsail del old.txt                     :: == rm
-mainsail where cargo                     :: == which
+jib dir .                           :: == ls
+jib type file.txt                   :: == cat
+jib copy a.txt b.txt                :: == cp
+jib del old.txt                     :: == rm
+jib where cargo                     :: == which
 ```
 
 ### Real applets, not stubs
@@ -117,14 +117,14 @@ Each applet implements the common POSIX flags and edge cases.
 - `tar` — create/extract/list with optional gzip (`-z`); accepts traditional (`cvfz`) and dashed (`-cvfz`) flag forms
 
 ```bash
-mainsail find . -name '*.tmp' -delete
-mainsail sed -i 's/foo/bar/g' *.txt
-mainsail awk -F, '{s+=$3} END{print s/NR}' data.csv
-mainsail jq '.servers[] | select(.region == "us") | .name' inventory.json
-mainsail http -H 'Authorization: Bearer $TOKEN' http://api.example.com/me
-mainsail dig MX gmail.com +short
-mainsail sort -k 3,3n -t , data.csv
-mainsail tar -czf src.tar.gz src/
+jib find . -name '*.tmp' -delete
+jib sed -i 's/foo/bar/g' *.txt
+jib awk -F, '{s+=$3} END{print s/NR}' data.csv
+jib jq '.servers[] | select(.region) | .name' inventory.json
+jib http -H 'Authorization: Bearer $TOKEN' http://api.example.com/me
+jib dig MX gmail.com +short
+jib sort -k 3,3n -t , data.csv
+jib tar -czf src.tar.gz src/
 ```
 
 ### Pipeline-grade I/O
@@ -132,12 +132,12 @@ mainsail tar -czf src.tar.gz src/
 Binary-safe through `cat`/`tee`/`gzip`. CRLF survives Windows text-mode round-trips. `tail -f` follows files and detects rotation. `xargs` accepts `-0` to handle Windows backslashes.
 
 ```bash
-mainsail find . -type f -print0 | mainsail xargs -0 mainsail sha256sum
-mainsail tail -f /var/log/app.log
-mainsail gzip -c data.bin | mainsail gunzip > data.bin.copy
+jib find . -type f -print0 | jib xargs -0 jib sha256sum
+jib tail -f /var/log/app.log
+jib gzip -c data.bin | jib gunzip > data.bin.copy
 ```
 
-### Verified parity with the Python original
+### Verified parity with the Python `mainsail`
 
 The repo ships a Python↔Rust diff harness that runs every test case against both implementations and asserts byte-for-byte equality of stdout and exit codes. Currently **76/76 cases match** across `cat`, `cut`, `sort`, `uniq`, `printf`, `date`, `tr`, `grep`, `sed`, `awk`, and the trivial applets. Run:
 
@@ -163,7 +163,7 @@ python tests/parity/run.py
 | System      | `uname` `hostname` `whoami` `date` `env` `sleep` `getopt` |
 | Control     | `true` `false` `yes` `seq` |
 
-Run `mainsail --list` for the full set with one-line descriptions, or `mainsail <applet> --help` for per-applet usage and flags. See [`PARITY.md`](PARITY.md) for the per-applet status against the Python upstream.
+Run `jib --list` for the full set with one-line descriptions, or `jib <applet> --help` for per-applet usage and flags. See [`PARITY.md`](PARITY.md) for the per-applet status against the Python upstream.
 
 ---
 
@@ -186,7 +186,7 @@ src/
 **Four-layer flow:**
 
 1. **Entry** — `main.rs` collects `env::args` and calls `cli::run`. The exit code is clamped to a `u8` `ExitCode`.
-2. **Dispatch** — `cli.rs` checks `argv[0]`'s lowercased stem against the registry (multi-call mode); falls through to `mainsail <applet> [args...]` otherwise. Intercepts `--help` only — `-h` is reserved for applet flags like `df -h`.
+2. **Dispatch** — `cli.rs` checks `argv[0]`'s lowercased stem against the registry (multi-call mode); falls through to `jib <applet> [args...]` otherwise. Intercepts `--help` only — `-h` is reserved for applet flags like `df -h`.
 3. **Registry** — `registry.rs` builds a `BTreeMap<&str, &'static Applet>` once via `OnceLock`, indexing every applet's canonical name and aliases.
 4. **Applet** — receives `argv` as `&[String]`, returns an `i32` exit code (`0` success, `1` runtime error, `2` usage error). Reads bytes via `io::stdin().lock()`; writes bytes via `io::stdout().lock()`.
 
@@ -229,6 +229,10 @@ python tests/parity/run.py
 The harness runs both implementations against a manifest of test cases and diffs `stdout` and exit codes. CI runs the same harness on Ubuntu against every push.
 
 ---
+
+## Why "jib"?
+
+A jib is the triangular sail forward of the mainsail — smaller, faster, more agile, and works alongside the main sail to drive the boat. Felt fitting for a Rust port that's a leaner companion to the Python `mainsail` rather than a successor.
 
 ## License
 

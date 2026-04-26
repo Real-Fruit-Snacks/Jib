@@ -1,6 +1,6 @@
 //! Top-level CLI: argv parsing, multi-call dispatch, top-level flags.
 //!
-//! Mirrors `mainsail/cli.py` in the Python project as closely as practical.
+//! Mirrors `jib/cli.py` in the Python project as closely as practical.
 
 use std::path::Path;
 
@@ -12,19 +12,19 @@ fn program_stem(argv0: &str) -> String {
     Path::new(argv0)
         .file_stem()
         .and_then(|s| s.to_str())
-        .unwrap_or("mainsail")
+        .unwrap_or("jib")
         .to_lowercase()
 }
 
 fn print_top_help() {
     println!(
-        "mainsail {} - cross-platform multi-call utility binary",
+        "jib {} - cross-platform multi-call utility binary",
         crate::VERSION
     );
     println!();
     println!("Usage:");
-    println!("  mainsail <applet> [args...]");
-    println!("  mainsail <applet> --help       show help for <applet>");
+    println!("  jib <applet> [args...]");
+    println!("  jib <applet> --help       show help for <applet>");
     println!("  <applet> [args...]          (when installed as hardlink/symlink)");
     println!();
     println!("Top-level options:");
@@ -65,11 +65,11 @@ fn print_list() {
 
 /// Entry point. Returns the exit code; the binary clamps to a `u8`.
 pub fn run(argv: &[String]) -> i32 {
-    let argv0 = argv.first().map(String::as_str).unwrap_or("mainsail");
+    let argv0 = argv.first().map(String::as_str).unwrap_or("jib");
     let stem = program_stem(argv0);
 
     // Multi-call mode: argv[0] basename matches a known applet.
-    if stem != "mainsail" {
+    if stem != "jib" {
         if let Some(applet) = registry::get(&stem) {
             // Intercept `--help` only — `-h` is overloaded by many applets
             // (df/du/sort use it for human-readable sizes).
@@ -85,7 +85,7 @@ pub fn run(argv: &[String]) -> i32 {
         }
     }
 
-    // Wrapper mode: `mainsail <applet> [args...]`.
+    // Wrapper mode: `jib <applet> [args...]`.
     if argv.len() < 2 {
         print_top_help();
         return 0;
@@ -94,7 +94,7 @@ pub fn run(argv: &[String]) -> i32 {
     let first = argv[1].as_str();
     match first {
         "--help" | "-h" => {
-            // `mainsail --help <applet>` prints that applet's help.
+            // `jib --help <applet>` prints that applet's help.
             if argv.len() >= 3 {
                 if let Some(applet) = registry::get(&argv[2]) {
                     print_applet_help(applet);
@@ -105,7 +105,7 @@ pub fn run(argv: &[String]) -> i32 {
             0
         }
         "--version" => {
-            println!("mainsail {}", crate::VERSION);
+            println!("jib {}", crate::VERSION);
             0
         }
         "--list" => {
@@ -114,11 +114,11 @@ pub fn run(argv: &[String]) -> i32 {
         }
         _ => {
             let Some(applet) = registry::get(first) else {
-                eprintln!("mainsail: unknown applet '{first}'");
-                eprintln!("try 'mainsail --list' to see all applets");
+                eprintln!("jib: unknown applet '{first}'");
+                eprintln!("try 'jib --list' to see all applets");
                 return 1;
             };
-            // `mainsail <applet> --help` -> applet help.
+            // `jib <applet> --help` -> applet help.
             if argv.len() >= 3 && argv[2] == "--help" {
                 print_applet_help(applet);
                 return 0;

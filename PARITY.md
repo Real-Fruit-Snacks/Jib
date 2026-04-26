@@ -1,6 +1,7 @@
 # Parity tracker
 
-Applet-by-applet status against the upstream Python implementation
+Applet-by-applet status of `jib` (this Rust binary) against the
+Python implementation
 ([Real-Fruit-Snacks/mainsail](https://github.com/Real-Fruit-Snacks/mainsail)).
 
 - ✅ ported and parity-tested via `tests/parity/run.py`
@@ -89,9 +90,9 @@ Python implementation.
 
 ## Tracker
 
-- **Total applets in upstream mainsail v0.2.1:** 73
-- **Total applets in this Rust port:** 73 (full feature set)
-- **Slim (`--no-default-features --features slim`):** 34 applets, ~545 KB release binary on Windows x64
+- **Reference (mainsail v0.2.1):** 73 applets
+- **`jib`:** 73 applets (full feature set)
+- **`jib --features slim`:** 34 applets, ~545 KB release binary on Windows x64
 - **Parity harness cases passing:** 76/76 across the basic / cut / sort / uniq / cat / printf / date / tr / grep / sed / awk surfaces
 
 The known 🟡 gaps are documented above and tracked in the upstream

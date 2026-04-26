@@ -1,4 +1,4 @@
-//! Integration tests for the `mainsail` binary.
+//! Integration tests for the `jib` binary.
 //!
 //! These mirror a subset of the Python project's `tests/test_applets.py`
 //! and cover top-level flags plus the trivial applets ported in this slice.
@@ -9,11 +9,11 @@ use std::process::Command;
 
 use tempfile::TempDir;
 
-/// Path to the freshly-built `mainsail` binary that Cargo built for tests.
+/// Path to the freshly-built `jib` binary that Cargo built for tests.
 fn bin_path() -> PathBuf {
     // Cargo sets CARGO_BIN_EXE_<name> for integration tests. See
     // https://doc.rust-lang.org/cargo/reference/environment-variables.html
-    PathBuf::from(env!("CARGO_BIN_EXE_mainsail"))
+    PathBuf::from(env!("CARGO_BIN_EXE_jib"))
 }
 
 struct Out {
@@ -26,7 +26,7 @@ fn run(args: &[&str]) -> Out {
     let output = Command::new(bin_path())
         .args(args)
         .output()
-        .expect("failed to spawn mainsail");
+        .expect("failed to spawn jib");
     Out {
         rc: output.status.code().unwrap_or(-1),
         stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
@@ -40,7 +40,7 @@ fn run(args: &[&str]) -> Out {
 fn version_prints_program_and_version() {
     let r = run(&["--version"]);
     assert_eq!(r.rc, 0);
-    assert!(r.stdout.starts_with("mainsail "), "got: {}", r.stdout);
+    assert!(r.stdout.starts_with("jib "), "got: {}", r.stdout);
 }
 
 #[test]
@@ -70,7 +70,7 @@ fn unknown_applet_errors() {
 
 #[test]
 fn applet_help_via_subcommand() {
-    // `mainsail cat --help` should print the usage block.
+    // `jib cat --help` should print the usage block.
     let r = run(&["cat", "--help"]);
     assert_eq!(r.rc, 0);
     assert!(r.stdout.contains("cat - "));
@@ -80,7 +80,7 @@ fn applet_help_via_subcommand() {
 
 #[test]
 fn help_applet_form_works() {
-    // `mainsail --help cat` should equal `mainsail cat --help`.
+    // `jib --help cat` should equal `jib cat --help`.
     let r = run(&["--help", "cat"]);
     assert_eq!(r.rc, 0);
     assert!(r.stdout.contains("cat - "));

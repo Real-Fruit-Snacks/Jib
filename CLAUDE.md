@@ -1,4 +1,4 @@
-# mainsail (Rust) — agent notes
+# jib — agent notes
 
 ## User preferences (sticky)
 
@@ -6,10 +6,12 @@
   `Co-Authored-By: Claude …` lines. Do not add "Generated with Claude
   Code" footers in PR bodies. Commit messages and PR descriptions are
   the user's voice only.
+- **Naming:** the binary, crate, and repo are all `jib`. The Python
+  reference is `Real-Fruit-Snacks/mainsail`. Don't conflate them.
 
 ## Project shape
 
-- Rust port of [Real-Fruit-Snacks/mainsail](https://github.com/Real-Fruit-Snacks/mainsail)
+- `jib` is the Rust sister project of [Real-Fruit-Snacks/mainsail](https://github.com/Real-Fruit-Snacks/mainsail)
   (Python BusyBox-style multi-call binary). 73 applets at parity (count).
 - Cargo features gate the applet groups: `slim` (34) / `extras` /
   `archives` / `hashing` / `disk` / `network` / `json`. `full` enables

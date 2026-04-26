@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mainsail-rs — Unix utilities in one Rust binary</title>
+    <title>jib — Unix utilities in one Rust binary</title>
     <meta name="description" content="73 utilities in one ~2 MB Rust binary: POSIX coreutils plus jq, an HTTP client, a DNS resolver, a TCP netcat, archives, hashing. Native Windows — no WSL. Six native targets. Verified parity with the Python original.">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='16' y='24' text-anchor='middle' font-family='Inter,sans-serif' font-size='24' font-weight='800' fill='%23dea584'%3EM%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -162,42 +162,42 @@
 <body>
 
     <nav class="nav"><div class="nav-inner">
-        <a href="#" class="nav-logo">mainsail<span class="rs">-rs</span></a>
+        <a href="#" class="nav-logo">jib</a>
         <div class="nav-links">
             <a href="#features">Features</a>
             <a href="#applets">Applets</a>
             <a href="#architecture">Architecture</a>
-            <a href="https://github.com/Real-Fruit-Snacks/mainsail-rs">GitHub</a>
-            <a href="https://github.com/Real-Fruit-Snacks/mainsail-rs/releases/latest" class="nav-cta">Download</a>
+            <a href="https://github.com/Real-Fruit-Snacks/jib">GitHub</a>
+            <a href="https://github.com/Real-Fruit-Snacks/jib/releases/latest" class="nav-cta">Download</a>
         </div>
     </div></nav>
 
     <section class="hero">
         <div class="container">
-            <h1 class="hero-title animate">mainsail<span class="rs">-rs</span></h1>
+            <h1 class="hero-title animate">jib</h1>
             <p class="hero-tagline animate" style="transition-delay:.1s">Unix utilities, in one Rust binary.</p>
             <p class="hero-desc animate" style="transition-delay:.2s">A BusyBox-style multi-call binary in Rust — 73 Unix utilities, one ~2 MB executable, native on Linux, Windows, and macOS. Functional port of <a href="https://github.com/Real-Fruit-Snacks/mainsail">Real-Fruit-Snacks/mainsail</a> with verified parity.</p>
             <div class="hero-ctas animate" style="transition-delay:.3s">
-                <a href="https://github.com/Real-Fruit-Snacks/mainsail-rs/releases/latest" class="btn-primary">Download Latest</a>
-                <a href="https://github.com/Real-Fruit-Snacks/mainsail-rs" class="btn-secondary">View Source</a>
+                <a href="https://github.com/Real-Fruit-Snacks/jib/releases/latest" class="btn-primary">Download Latest</a>
+                <a href="https://github.com/Real-Fruit-Snacks/jib" class="btn-secondary">View Source</a>
             </div>
             <div class="terminal animate-scale" style="transition-delay:.4s">
                 <div class="terminal-bar">
                     <span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span>
-                    <span class="terminal-label">mainsail-rs</span>
+                    <span class="terminal-label">jib</span>
                 </div>
-                <div class="terminal-body"><pre><span class="t-g">$</span> mainsail seq 100 | mainsail sort -rn | mainsail head -3
+                <div class="terminal-body"><pre><span class="t-g">$</span> jib seq 100 | jib sort -rn | jib head -3
 <span class="t-y">100
 99
 98</span>
 
-<span class="t-g">$</span> mainsail find . -name '*.rs' -size +1k -mtime -7
+<span class="t-g">$</span> jib find . -name '*.rs' -size +1k -mtime -7
 <span class="t-m">./src/applets/sed.rs
 ./src/applets/awk.rs
 ./src/applets/jq.rs</span>
 
-<span class="t-g">$</span> mainsail tar -czf src.tgz src/
-<span class="t-g">$</span> mainsail sha256sum src.tgz
+<span class="t-g">$</span> jib tar -czf src.tgz src/
+<span class="t-g">$</span> jib sha256sum src.tgz
 <span class="t-b">d4f2a8b1c3e7… *src.tgz</span></pre></div>
             </div>
         </div>
@@ -228,7 +228,7 @@
                 <div class="bento-card bento-hero animate" style="transition-delay:.1s">
                     <h3>One Binary, 73 Utilities</h3>
                     <p>Every common shell tool dispatched through a single executable — POSIX coreutils plus <code>jq</code>, <code>http</code>, <code>dig</code>, <code>nc</code>, archives, hashing, and the BusyBox parity gap-fillers. Symlink it as <code>cat</code>, <code>ls</code>, <code>grep</code> and the multi-call dispatcher takes over.</p>
-                    <div class="mini-terminal"><span class="t-g">$</span> mainsail --list | wc -l<br><span class="t-b">73</span><br><span class="t-g">$</span> ln -s mainsail cat && ./cat README.md</div>
+                    <div class="mini-terminal"><span class="t-g">$</span> jib --list | wc -l<br><span class="t-b">73</span><br><span class="t-g">$</span> ln -s jib cat && ./cat README.md</div>
                 </div>
                 <div class="bento-card bento-stat animate" style="transition-delay:.18s">
                     <div class="big">2<span style="font-size:24px">MB</span></div>
@@ -275,7 +275,7 @@
         <div class="container">
             <div class="section-label animate">APPLETS</div>
             <h2 class="section-title animate" style="transition-delay:.08s">All 73, organized</h2>
-            <p class="section-desc animate" style="transition-delay:.16s">Each applet implements common POSIX flags. Run <code>mainsail &lt;applet&gt; --help</code> for per-applet usage. The <span style="color:var(--yellow)">●</span> markers flag known parity gaps tracked in <a href="https://github.com/Real-Fruit-Snacks/mainsail-rs/blob/main/PARITY.md" style="color:var(--accent1)">PARITY.md</a>.</p>
+            <p class="section-desc animate" style="transition-delay:.16s">Each applet implements common POSIX flags. Run <code>jib &lt;applet&gt; --help</code> for per-applet usage. The <span style="color:var(--yellow)">●</span> markers flag known parity gaps tracked in <a href="https://github.com/Real-Fruit-Snacks/jib/blob/main/PARITY.md" style="color:var(--accent1)">PARITY.md</a>.</p>
 
             <div class="pill-group animate" data-accent="green">
                 <div class="pill-group-label">File operations</div>
@@ -439,16 +439,16 @@
                 <div class="terminal animate" style="transition-delay:.1s">
                     <div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-label">install.sh</span></div>
                     <div class="terminal-body"><pre><span class="t-m"># From a release</span>
-<span class="t-g">$</span> curl -LO https://github.com/Real-Fruit-Snacks/mainsail-rs/\
-       releases/latest/download/mainsail-linux-x64
-<span class="t-g">$</span> chmod +x mainsail-linux-x64
-<span class="t-g">$</span> ./mainsail-linux-x64 --version
-<span class="t-b">mainsail 0.1.0</span>
+<span class="t-g">$</span> curl -LO https://github.com/Real-Fruit-Snacks/jib/\
+       releases/latest/download/jib-linux-x64
+<span class="t-g">$</span> chmod +x jib-linux-x64
+<span class="t-g">$</span> ./jib-linux-x64 --version
+<span class="t-b">jib 0.1.0</span>
 
 <span class="t-m"># From source — Rust 1.75+</span>
-<span class="t-g">$</span> git clone https://github.com/Real-Fruit-Snacks/mainsail-rs.git
-<span class="t-g">$</span> cd mainsail-rs && cargo build --release
-<span class="t-b">→ target/release/mainsail (~2 MB)</span>
+<span class="t-g">$</span> git clone https://github.com/Real-Fruit-Snacks/jib.git
+<span class="t-g">$</span> cd jib && cargo build --release
+<span class="t-b">→ target/release/jib (~2 MB)</span>
 
 <span class="t-m"># Slim build — POSIX coreutils only, no engines/archives</span>
 <span class="t-g">$</span> cargo build --release \
@@ -462,17 +462,17 @@
                 <div class="terminal animate" style="transition-delay:.25s">
                     <div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-label">usage.sh</span></div>
                     <div class="terminal-body"><pre><span class="t-m"># Daily pipelines (find + awk + jq, all in one binary)</span>
-<span class="t-g">$</span> mainsail find . -name '*.rs' -mtime -7
-<span class="t-g">$</span> mainsail awk -F, '{s+=$3} END{print s/NR}' data.csv
+<span class="t-g">$</span> jib find . -name '*.rs' -mtime -7
+<span class="t-g">$</span> jib awk -F, '{s+=$3} END{print s/NR}' data.csv
 
 <span class="t-m"># jq subset</span>
-<span class="t-g">$</span> mainsail jq '.servers[] | select(.region) | .name' inv.json
+<span class="t-g">$</span> jib jq '.servers[] | select(.region) | .name' inv.json
 
 <span class="t-m"># DNS without dig installed</span>
-<span class="t-g">$</span> mainsail dig MX gmail.com +short
+<span class="t-g">$</span> jib dig MX gmail.com +short
 
 <span class="t-m"># Cross-platform integrity</span>
-<span class="t-g">$</span> echo -n abc | mainsail sha256sum
+<span class="t-g">$</span> echo -n abc | jib sha256sum
 <span class="t-b">ba7816bf8f01cfea414140de5dae2223…</span>
 
 <span class="t-m"># Verify parity against the Python original</span>
@@ -490,19 +490,19 @@
                 <div>
                     <h4>Documentation</h4>
                     <ul>
-                        <li><a href="https://github.com/Real-Fruit-Snacks/mainsail-rs#quick-start">Quick Start</a></li>
-                        <li><a href="https://github.com/Real-Fruit-Snacks/mainsail-rs#features">Features</a></li>
-                        <li><a href="https://github.com/Real-Fruit-Snacks/mainsail-rs#supported-applets">Applets</a></li>
-                        <li><a href="https://github.com/Real-Fruit-Snacks/mainsail-rs#architecture">Architecture</a></li>
-                        <li><a href="https://github.com/Real-Fruit-Snacks/mainsail-rs/blob/main/PARITY.md">Parity tracker</a></li>
+                        <li><a href="https://github.com/Real-Fruit-Snacks/jib#quick-start">Quick Start</a></li>
+                        <li><a href="https://github.com/Real-Fruit-Snacks/jib#features">Features</a></li>
+                        <li><a href="https://github.com/Real-Fruit-Snacks/jib#supported-applets">Applets</a></li>
+                        <li><a href="https://github.com/Real-Fruit-Snacks/jib#architecture">Architecture</a></li>
+                        <li><a href="https://github.com/Real-Fruit-Snacks/jib/blob/main/PARITY.md">Parity tracker</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4>Resources</h4>
                     <ul>
-                        <li><a href="https://github.com/Real-Fruit-Snacks/mainsail-rs/releases/latest">Latest Release</a></li>
-                        <li><a href="https://github.com/Real-Fruit-Snacks/mainsail-rs/issues">Report Issue</a></li>
-                        <li><a href="https://github.com/Real-Fruit-Snacks/mainsail-rs/actions">CI Status</a></li>
+                        <li><a href="https://github.com/Real-Fruit-Snacks/jib/releases/latest">Latest Release</a></li>
+                        <li><a href="https://github.com/Real-Fruit-Snacks/jib/issues">Report Issue</a></li>
+                        <li><a href="https://github.com/Real-Fruit-Snacks/jib/actions">CI Status</a></li>
                         <li><a href="https://github.com/Real-Fruit-Snacks/mainsail">Python upstream</a></li>
                     </ul>
                 </div>

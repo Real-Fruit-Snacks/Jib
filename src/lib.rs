@@ -1,4 +1,4 @@
-//! mainsail — a BusyBox-style multi-call binary in Rust.
+//! jib — a BusyBox-style multi-call binary in Rust.
 //!
 //! The binary dispatches to one of many *applets* (Unix-style utilities)
 //! using one of two modes:

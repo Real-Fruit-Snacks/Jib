@@ -11,62 +11,62 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # ── full builds (73 applets) ─────────────────────────
+          # ── full builds (73 applets, binary name "jib") ─────────────────────────
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-22.04
-            artifact: mainsail-linux-x64
+            artifact: jib-linux-x64
             ext: ""
             features: full
           - target: x86_64-unknown-linux-musl
             os: ubuntu-22.04
-            artifact: mainsail-linux-x64-musl
+            artifact: jib-linux-x64-musl
             ext: ""
             features: full
             apt: musl-tools
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-24.04-arm
-            artifact: mainsail-linux-arm64
+            artifact: jib-linux-arm64
             ext: ""
             features: full
           - target: aarch64-apple-darwin
             os: macos-latest
-            artifact: mainsail-macos-arm64
+            artifact: jib-macos-arm64
             ext: ""
             features: full
           - target: x86_64-pc-windows-msvc
             os: windows-latest
-            artifact: mainsail-windows-x64
+            artifact: jib-windows-x64
             ext: ".exe"
             features: full
           - target: aarch64-pc-windows-msvc
             os: windows-11-arm
-            artifact: mainsail-windows-arm64
+            artifact: jib-windows-arm64
             ext: ".exe"
             features: full
           # ── slim builds (34 applets — POSIX coreutils) ───────
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-22.04
-            artifact: mainsail-linux-x64-slim
+            artifact: jib-linux-x64-slim
             ext: ""
             features: slim
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-24.04-arm
-            artifact: mainsail-linux-arm64-slim
+            artifact: jib-linux-arm64-slim
             ext: ""
             features: slim
           - target: aarch64-apple-darwin
             os: macos-latest
-            artifact: mainsail-macos-arm64-slim
+            artifact: jib-macos-arm64-slim
             ext: ""
             features: slim
           - target: x86_64-pc-windows-msvc
             os: windows-latest
-            artifact: mainsail-windows-x64-slim
+            artifact: jib-windows-x64-slim
             ext: ".exe"
             features: slim
           - target: aarch64-pc-windows-msvc
             os: windows-11-arm
-            artifact: mainsail-windows-arm64-slim
+            artifact: jib-windows-arm64-slim
             ext: ".exe"
             features: slim
     runs-on: ${{ matrix.os }}
@@ -91,7 +91,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          cp "target/${{ matrix.target }}/release/mainsail${{ matrix.ext }}" "dist/${{ matrix.artifact }}${{ matrix.ext }}"
+          cp "target/${{ matrix.target }}/release/jib${{ matrix.ext }}" "dist/${{ matrix.artifact }}${{ matrix.ext }}"
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}

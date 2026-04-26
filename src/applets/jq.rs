@@ -422,12 +422,12 @@ impl<'a> PFilter<'a> {
         Ok(l)
     }
     fn parse_comma(&mut self) -> Result<F, String> {
-        let mut parts = vec![self.parse_addsub()?];
+        let mut parts = vec![self.parse_compare()?];
         loop {
             self.skip_ws();
             if self.i < self.s.len() && self.s[self.i] == b',' {
                 self.i += 1;
-                parts.push(self.parse_addsub()?);
+                parts.push(self.parse_compare()?);
             } else {
                 break;
             }
@@ -438,7 +438,50 @@ impl<'a> PFilter<'a> {
             Ok(F::Comma(parts))
         }
     }
-    /// Left-associative `+` / `-`. Sits between comma and muldiv in jq's
+    /// Comparison operators `==`, `!=`, `<`, `<=`, `>`, `>=`. Sit between
+    /// comma and addsub so arithmetic results feed in. Left-associative.
+    fn parse_compare(&mut self) -> Result<F, String> {
+        let mut l = self.parse_addsub()?;
+        loop {
+            self.skip_ws();
+            if self.i >= self.s.len() {
+                break;
+            }
+            let c0 = self.s[self.i];
+            let c1 = self.s.get(self.i + 1).copied();
+            let op = match (c0, c1) {
+                (b'=', Some(b'=')) => {
+                    self.i += 2;
+                    "=="
+                }
+                (b'!', Some(b'=')) => {
+                    self.i += 2;
+                    "!="
+                }
+                (b'<', Some(b'=')) => {
+                    self.i += 2;
+                    "<="
+                }
+                (b'>', Some(b'=')) => {
+                    self.i += 2;
+                    ">="
+                }
+                (b'<', _) => {
+                    self.i += 1;
+                    "<"
+                }
+                (b'>', _) => {
+                    self.i += 1;
+                    ">"
+                }
+                _ => break,
+            };
+            let r = self.parse_addsub()?;
+            l = F::Bin(op.to_string(), Box::new(l), Box::new(r));
+        }
+        Ok(l)
+    }
+    /// Left-associative `+` / `-`. Sits between compare and muldiv in jq's
     /// precedence chain.
     fn parse_addsub(&mut self) -> Result<F, String> {
         let mut l = self.parse_muldiv()?;
@@ -708,12 +751,12 @@ impl<'a> PFilter<'a> {
         Ok(node)
     }
     fn parse_pipe_no_comma(&mut self) -> Result<F, String> {
-        let mut l = self.parse_addsub()?;
+        let mut l = self.parse_compare()?;
         loop {
             self.skip_ws();
             if self.i < self.s.len() && self.s[self.i] == b'|' {
                 self.i += 1;
-                let r = self.parse_addsub()?;
+                let r = self.parse_compare()?;
                 l = F::Pipe(Box::new(l), Box::new(r));
             } else {
                 break;
@@ -810,6 +853,61 @@ fn jeq(a: &J, b: &J) -> bool {
                     .all(|((k1, v1), (k2, v2))| k1 == k2 && jeq(v1, v2))
         }
         _ => false,
+    }
+}
+
+/// jq's canonical type ordering for cross-type comparison:
+/// null < false < true < number < string < array < object.
+fn type_rank(v: &J) -> u8 {
+    match v {
+        J::Null => 0,
+        J::Bool(false) => 1,
+        J::Bool(true) => 2,
+        J::Num(_) => 3,
+        J::Str(_) => 4,
+        J::Arr(_) => 5,
+        J::Obj(_) => 6,
+    }
+}
+
+/// Total order matching jq's spec. Used by `<`, `<=`, `>`, `>=`, `sort`,
+/// and friends. Equal values compare equal; mixed types fall back to
+/// `type_rank`. NaN is treated as equal to itself for stability.
+fn jcmp(a: &J, b: &J) -> std::cmp::Ordering {
+    use std::cmp::Ordering;
+    let ra = type_rank(a);
+    let rb = type_rank(b);
+    if ra != rb {
+        return ra.cmp(&rb);
+    }
+    match (a, b) {
+        (J::Null, J::Null) => Ordering::Equal,
+        (J::Bool(x), J::Bool(y)) => x.cmp(y),
+        (J::Num(x), J::Num(y)) => x.partial_cmp(y).unwrap_or(Ordering::Equal),
+        (J::Str(x), J::Str(y)) => x.cmp(y),
+        (J::Arr(x), J::Arr(y)) => {
+            for (xi, yi) in x.iter().zip(y.iter()) {
+                match jcmp(xi, yi) {
+                    Ordering::Equal => continue,
+                    o => return o,
+                }
+            }
+            x.len().cmp(&y.len())
+        }
+        (J::Obj(x), J::Obj(y)) => {
+            // BTreeMap iterates in sorted-key order — pair up keys then values.
+            for ((kx, vx), (ky, vy)) in x.iter().zip(y.iter()) {
+                match kx.cmp(ky) {
+                    Ordering::Equal => match jcmp(vx, vy) {
+                        Ordering::Equal => continue,
+                        o => return o,
+                    },
+                    o => return o,
+                }
+            }
+            x.len().cmp(&y.len())
+        }
+        _ => Ordering::Equal,
     }
 }
 
@@ -919,7 +1017,7 @@ fn apply(f: &F, v: &J) -> Result<Vec<J>, String> {
     }
 }
 
-/// Type-aware binary arithmetic matching jq's spec:
+/// Type-aware binary arithmetic and comparison, matching jq's spec:
 ///
 /// - number op number = number arithmetic
 /// - string + string = concat
@@ -927,6 +1025,7 @@ fn apply(f: &F, v: &J) -> Result<Vec<J>, String> {
 /// - object + object = right-merge (keys in `b` overwrite `a`)
 /// - null + x or x + null = x (jq treats null as additive identity)
 /// - division/modulus by zero is an error
+/// - `==` / `!=` use `jeq`; `<` `<=` `>` `>=` use `jcmp` (jq's total order)
 ///
 /// Anything else is an error with a jq-style message.
 fn apply_binop(op: &str, a: &J, b: &J) -> Result<J, String> {
@@ -1035,6 +1134,12 @@ fn apply_binop(op: &str, a: &J, b: &J) -> Result<J, String> {
                 preview(b)
             )),
         },
+        "==" => Ok(J::Bool(jeq(a, b))),
+        "!=" => Ok(J::Bool(!jeq(a, b))),
+        "<" => Ok(J::Bool(jcmp(a, b) == std::cmp::Ordering::Less)),
+        "<=" => Ok(J::Bool(jcmp(a, b) != std::cmp::Ordering::Greater)),
+        ">" => Ok(J::Bool(jcmp(a, b) == std::cmp::Ordering::Greater)),
+        ">=" => Ok(J::Bool(jcmp(a, b) != std::cmp::Ordering::Less)),
         _ => Err(format!("unknown operator: {op}")),
     }
 }

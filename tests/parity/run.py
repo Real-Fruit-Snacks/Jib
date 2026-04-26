@@ -188,6 +188,21 @@ def load_manifest() -> list[Case]:
         Case("jq_arith_arr_concat", ["jq", "-c", ". + [3,4]"], input=b"[1,2]\n"),
         Case("jq_arith_obj_merge", ["jq", "-c", '. + {"b":2}'], input=b'{"a":1}\n'),
         Case("jq_arith_str_split", ["jq", "-c", '. / ","'], input=b'"a,b,c"\n'),
+        # Comparison operators: numeric, string lex, equality, mixed-type, select.
+        Case("jq_cmp_num_lt", ["jq", ". < 10"], input=b"5\n"),
+        Case("jq_cmp_num_gt", ["jq", ". > 10"], input=b"5\n"),
+        Case("jq_cmp_num_le", ["jq", ". <= 5"], input=b"5\n"),
+        Case("jq_cmp_num_ge", ["jq", ". >= 5"], input=b"5\n"),
+        Case("jq_cmp_eq_null", ["jq", ". == null"], input=b"null\n"),
+        Case("jq_cmp_neq", ["jq", ". != 6"], input=b"5\n"),
+        Case("jq_cmp_str_lex", ["jq", '. < "fzz"'], input=b'"foo"\n'),
+        Case("jq_cmp_mixed_type", ["jq", ". < 1"], input=b'"abc"\n'),
+        Case(
+            "jq_cmp_select",
+            ["jq", "-c", ".[] | select(.a > 1)"],
+            input=b'[{"a":1},{"a":2},{"a":3}]\n',
+        ),
+        Case("jq_cmp_length_ge", ["jq", "length >= 3"], input=b"[1,2,3]\n"),
     ]
 
     # HTTP/HTTPS — only enabled if HARNESS_NETWORK=1 to avoid flaky CI.

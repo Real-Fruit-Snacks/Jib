@@ -1,0 +1,13 @@
+/target
+Cargo.lock.bak
+*.swp
+.DS_Store
+
+# Editor/agent state
+.claude/
+.idea/
+.vscode/
+
+# Parity harness state
+/tests/parity/mainsail-python/
+/tests/parity/_workspace/

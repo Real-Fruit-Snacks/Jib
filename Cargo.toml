@@ -1,0 +1,55 @@
+[package]
+name = "mainsail"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "A BusyBox-style multi-call binary in Rust — Unix utilities in one executable, native on Linux, Windows, and macOS."
+license = "MIT"
+authors = ["Matt"]
+repository = "https://github.com/Real-Fruit-Snacks/mainsail"
+readme = "README.md"
+categories = ["command-line-utilities"]
+keywords = ["busybox", "coreutils", "multi-call", "cli", "utilities"]
+
+[[bin]]
+name = "mainsail"
+path = "src/main.rs"
+
+[lib]
+name = "mainsail"
+path = "src/lib.rs"
+
+[features]
+# `full` is the default and re-exports every applet group. Build a slim
+# binary (39 POSIX coreutils, no engines/archives/hashing/network/json) with:
+#   cargo build --release --no-default-features --features slim
+default = ["full"]
+full = ["slim", "archives", "hashing", "disk", "network", "json", "extras"]
+slim = ["dep:regex"]
+archives = ["dep:flate2", "dep:tar", "dep:zip"]
+hashing = ["dep:md-5", "dep:sha1", "dep:sha2"]
+disk = []
+network = []
+json = []
+extras = ["dep:similar"]
+
+[dependencies]
+gethostname = "1"
+regex = { version = "1", optional = true }
+md-5 = { version = "0.10", optional = true }
+sha1 = { version = "0.10", optional = true }
+sha2 = { version = "0.10", optional = true }
+flate2 = { version = "1", optional = true, default-features = false, features = ["rust_backend"] }
+tar = { version = "0.4", optional = true }
+zip = { version = "5", optional = true, default-features = false, features = ["deflate", "deflate-flate2"] }
+similar = { version = "2", optional = true }
+
+[profile.release]
+opt-level = "z"      # optimize for size; switch to 3 if perf matters more
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+
+[dev-dependencies]
+tempfile = "3"

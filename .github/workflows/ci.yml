@@ -1,0 +1,49 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo fmt
+        run: cargo fmt -- --check
+      - name: cargo clippy (full)
+        run: cargo clippy --all-targets -- -D warnings
+      - name: cargo clippy (slim)
+        run: cargo clippy --all-targets --no-default-features --features slim -- -D warnings
+      - name: cargo test
+        run: cargo test
+      - name: cargo build --release (full)
+        run: cargo build --release
+      - name: cargo build --release (slim)
+        run: cargo build --release --no-default-features --features slim
+
+  parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Clone Python mainsail
+        run: git clone --depth 1 https://github.com/Real-Fruit-Snacks/mainsail.git tests/parity/mainsail-python
+      - name: Build Rust release binary
+        run: cargo build --release
+      - name: Run parity harness
+        run: python tests/parity/run.py

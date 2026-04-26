@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>jib — Unix utilities in one Rust binary</title>
-    <meta name="description" content="73 utilities in one ~2 MB Rust binary: POSIX coreutils plus jq, an HTTP client, a DNS resolver, a TCP netcat, archives, hashing. Native Windows — no WSL. Six native targets. Verified parity with the Python original.">
+    <meta name="description" content="78 utilities in one ~2 MB Rust binary: POSIX coreutils plus jq, an HTTP client, a DNS resolver, a TCP netcat, archives, hashing. Native Windows — no WSL. Six native targets. Verified parity with the Python original.">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='16' y='24' text-anchor='middle' font-family='Inter,sans-serif' font-size='24' font-weight='800' fill='%23dea584'%3EM%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -176,7 +176,7 @@
         <div class="container">
             <div class="hero-logo animate"><img src="assets/logo-dark.svg" alt="jib" style="max-width:600px;width:100%;height:auto;margin:0 auto 24px;display:block"></div>
             <p class="hero-tagline animate" style="transition-delay:.1s">Unix utilities, in one Rust binary.</p>
-            <p class="hero-desc animate" style="transition-delay:.2s">A BusyBox-style multi-call binary in Rust — 73 Unix utilities, one ~2 MB executable, native on Linux, Windows, and macOS. Functional port of <a href="https://github.com/Real-Fruit-Snacks/mainsail">Real-Fruit-Snacks/mainsail</a> with verified parity.</p>
+            <p class="hero-desc animate" style="transition-delay:.2s">A BusyBox-style multi-call binary in Rust — 78 Unix utilities, one ~2 MB executable, native on Linux, Windows, and macOS. Functional port of <a href="https://github.com/Real-Fruit-Snacks/mainsail">Real-Fruit-Snacks/mainsail</a> with verified parity.</p>
             <div class="hero-ctas animate" style="transition-delay:.3s">
                 <a href="https://github.com/Real-Fruit-Snacks/jib/releases/latest" class="btn-primary">Download Latest</a>
                 <a href="https://github.com/Real-Fruit-Snacks/jib" class="btn-secondary">View Source</a>
@@ -205,9 +205,9 @@
 
     <div class="container">
         <div class="stats animate">
-            <div class="stat"><div class="stat-num" data-target="73">0</div><div class="stat-label">Applets</div></div>
+            <div class="stat"><div class="stat-num" data-target="78">0</div><div class="stat-label">Applets</div></div>
             <div class="stat-div"></div>
-            <div class="stat"><div class="stat-num" data-target="76">0</div><div class="stat-label">Parity Tests</div></div>
+            <div class="stat"><div class="stat-num" data-target="116">0</div><div class="stat-label">Parity Tests</div></div>
             <div class="stat-div"></div>
             <div class="stat"><div class="stat-num" data-target="2" data-suffix="MB">0</div><div class="stat-label">Binary</div></div>
             <div class="stat-div"></div>
@@ -226,9 +226,9 @@
 
             <div class="bento">
                 <div class="bento-card bento-hero animate" style="transition-delay:.1s">
-                    <h3>One Binary, 73 Utilities</h3>
+                    <h3>One Binary, 78 Utilities</h3>
                     <p>Every common shell tool dispatched through a single executable — POSIX coreutils plus <code>jq</code>, <code>http</code>, <code>dig</code>, <code>nc</code>, archives, hashing, and the BusyBox parity gap-fillers. Symlink it as <code>cat</code>, <code>ls</code>, <code>grep</code> and the multi-call dispatcher takes over.</p>
-                    <div class="mini-terminal"><span class="t-g">$</span> jib --list | wc -l<br><span class="t-b">73</span><br><span class="t-g">$</span> ln -s jib cat && ./cat README.md</div>
+                    <div class="mini-terminal"><span class="t-g">$</span> jib --list | wc -l<br><span class="t-b">78</span><br><span class="t-g">$</span> ln -s jib cat && ./cat README.md</div>
                 </div>
                 <div class="bento-card bento-stat animate" style="transition-delay:.18s">
                     <div class="big">2<span style="font-size:24px">MB</span></div>
@@ -274,7 +274,7 @@
     <section id="applets" style="background:var(--mantle)">
         <div class="container">
             <div class="section-label animate">APPLETS</div>
-            <h2 class="section-title animate" style="transition-delay:.08s">All 73, organized</h2>
+            <h2 class="section-title animate" style="transition-delay:.08s">All 78, organized</h2>
             <p class="section-desc animate" style="transition-delay:.16s">Each applet implements common POSIX flags. Run <code>jib &lt;applet&gt; --help</code> for per-applet usage. The <span style="color:var(--yellow)">●</span> markers flag known parity gaps tracked in <a href="https://github.com/Real-Fruit-Snacks/jib/blob/main/PARITY.md" style="color:var(--accent1)">PARITY.md</a>.</p>
 
             <div class="pill-group animate" data-accent="green">
@@ -326,15 +326,18 @@
                     <div class="pill">diff</div>
                     <div class="pill">join</div>
                     <div class="pill">fmt</div>
+                    <div class="pill">fold</div>
+                    <div class="pill">column</div>
                     <div class="pill">od</div>
                     <div class="pill">hexdump</div>
+                    <div class="pill">base64</div>
                 </div>
             </div>
 
             <div class="pill-group animate" style="transition-delay:.09s" data-accent="cyan">
                 <div class="pill-group-label">JSON &amp; data</div>
                 <div class="pills">
-                    <div class="pill">jq<span class="gap" title="arithmetic, comparisons, if/then/else pending">●</span></div>
+                    <div class="pill">jq<span class="gap" title="recursive descent, to_entries, math built-ins, user functions pending">●</span></div>
                 </div>
             </div>
 
@@ -387,6 +390,8 @@
                     <div class="pill">uname<span class="gap" title="-r/-v/-p return 'unknown' on Windows">●</span></div>
                     <div class="pill">hostname</div>
                     <div class="pill">whoami</div>
+                    <div class="pill">id<span class="gap" title="best-effort without libc — IDs are zeros">●</span></div>
+                    <div class="pill">groups<span class="gap" title="best-effort without libc">●</span></div>
                     <div class="pill">date</div>
                     <div class="pill">env</div>
                     <div class="pill">sleep</div>
@@ -424,7 +429,7 @@
                 <div class="arch-card animate" style="transition-delay:.4s">
                     <div class="arch-num">4</div>
                     <h3>Applets</h3>
-                    <p>73 modules in <code>src/applets/</code>, ranging from ~10 lines (<code>true</code>) to ~1100 (<code>awk</code>). Read bytes via <code>io::stdin().lock()</code>; write via <code>io::stdout().lock()</code>. Return 0 / 1 / 2 (success / runtime / usage).</p>
+                    <p>78 modules in <code>src/applets/</code>, ranging from ~10 lines (<code>true</code>) to ~1100 (<code>awk</code>). Read bytes via <code>io::stdin().lock()</code>; write via <code>io::stdout().lock()</code>. Return 0 / 1 / 2 (success / runtime / usage).</p>
                 </div>
             </div>
         </div>

@@ -84,14 +84,14 @@ Python implementation.
 
 | jq         | 🟡 | Identity, fields (`.foo`, `.foo.bar`, `.["k"]`), index `.[0]`, slice `.[2:5]`, iterate `.[]`, optional `?`, pipe `\|`, comma `,`, parens, array/object constructors. **Arithmetic** (`+ - * / %`) with type-aware coercion (number/number, string concat, array concat, object merge, array-minus-array, string division → array of parts). **Comparisons** (`== != < <= > >=`) with jq's canonical type ordering (null < false < true < number < string < array < object). **Alternative** (`//`) — keep non-null/false LHS values, fall back to RHS otherwise. **Conditionals** `if/then/elif/else/end` with input-passthrough on no-else. Built-ins: length, keys, values, type, has, select, map, not, empty, tostring, tonumber, add, min, max, first, last, reverse, sort, unique, **split, join, startswith, endswith, ltrimstr, rtrimstr, ascii_downcase, ascii_upcase**. **Not implemented**: recursive descent (`..`), `path()`, `paths()`, `to_entries`, `from_entries`, `with_entries`, `floor`/`ceil`/`sqrt`, `any`/`all`/`isempty`, `ascii`, `explode`/`implode`, user functions. |
 
-## Misc extras (`--features extras`, 19 applets)
+## Misc extras (`--features extras`, 24 applets)
 
-| cmp, comm, dd, diff, expand, fmt, getopt, hexdump, join, mktemp, nl, od, paste, rev, split, tac, truncate, unexpand, yes | ✅ | All ported. `diff -u` uses the `similar` crate for Myers diff. |
+| base64, cmp, column, comm, dd, diff, expand, fmt, fold, getopt, groups, hexdump, id, join, mktemp, nl, od, paste, rev, split, tac, truncate, unexpand, yes | ✅ | All ported. `diff -u` uses the `similar` crate for Myers diff. `id`/`groups` are best-effort on platforms without libc — IDs are zeros and the group is derived from the user name. |
 
 ## Tracker
 
 - **Reference (mainsail v0.2.1):** 73 applets
-- **`jib`:** 73 applets (full feature set)
+- **`jib`:** 78 applets (full feature set)
 - **`jib --features slim`:** 34 applets, ~545 KB release binary on Windows x64
 - **Parity harness cases passing:** 116/116 across the basic / cut / sort / uniq / cat / printf / date / tr / grep / sed / awk / jq surfaces
 

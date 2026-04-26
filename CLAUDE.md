@@ -12,13 +12,13 @@
 ## Project shape
 
 - `jib` is the Rust sister project of [Real-Fruit-Snacks/mainsail](https://github.com/Real-Fruit-Snacks/mainsail)
-  (Python BusyBox-style multi-call binary). 73 applets at parity (count).
-- Cargo features gate the applet groups: `slim` (34) / `extras` /
+  (Python BusyBox-style multi-call binary). 78 applets at parity (count).
+- Cargo features gate the applet groups: `slim` (34) / `extras` (24) /
   `archives` / `hashing` / `disk` / `network` / `json`. `full` enables
   everything.
 - Behavior parity is verified by `python tests/parity/run.py`, which
   diffs stdout/rc against the upstream Python reference cloned to
-  `tests/parity/mainsail-python/`. 76/76 cases match as of last run.
+  `tests/parity/mainsail-python/`. 116/116 cases match as of last run.
 
 ## Repository conventions
 
@@ -34,12 +34,13 @@
 
 ## Known gaps (tracked in `PARITY.md`)
 
-- `http`: HTTP/1.1 only — HTTPS needs `rustls`.
-- `jq`: missing arithmetic, comparisons, `if/then/else`, `//`,
-  recursive descent, several string built-ins.
+- `jq`: missing recursive descent (`..`), `to_entries`/`from_entries`/
+  `with_entries`, math built-ins (`floor`/`ceil`/`sqrt`),
+  `any`/`all`/`isempty`, user-defined functions.
 - `awk`: no user-defined functions, no `getline`, regex `FS`, or
   SUBSEP-based multidim arrays.
 - `uname -r/-v/-p` returns `"unknown"` on Windows (needs registry/WMI).
-- `touch -a`: stable Rust lacks `set_accessed`; atime is best-effort.
 - `date %z`: no full TZ DB; offset is always whatever `utc_offset_secs`
   produces (currently 0).
+- `id`/`groups`: best-effort without libc; IDs are zeros and the group
+  is derived from the user name.

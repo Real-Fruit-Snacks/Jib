@@ -125,4 +125,70 @@ Repeatedly print STRING (or 'y' if no STRING is given) until killed or the
 output pipe is closed.
 ",
     ),
+    (
+        "base64",
+        "\
+Usage: base64 [-d] [-w COLS] [FILE]
+
+Encode FILE (or stdin) to base64; with -d, decode it. Output is wrapped at
+76 columns by default; use -w 0 to disable wrapping.
+
+Options:
+  -d, --decode        decode mode
+  -w, --wrap COLS     wrap encoded output at COLS columns (0 disables)
+  -i, --ignore-garbage  accepted for compatibility (decode already ignores
+                      whitespace and unknown chars)
+",
+    ),
+    (
+        "fold",
+        "\
+Usage: fold [-s] [-w WIDTH] [FILE]...
+
+Wrap each input line to WIDTH bytes (default 80). With -s, break at the
+last whitespace before the limit when one is available.
+
+Options:
+  -w, --width WIDTH   wrap at WIDTH columns
+  -s, --spaces        prefer whitespace breakpoints
+  -N                  shorthand for -w N (POSIX form)
+",
+    ),
+    (
+        "column",
+        "\
+Usage: column [-t] [-s SEP] [FILE]...
+
+In table mode (-t), split each input line on whitespace (or SEP) and align
+fields into columns. Without -t, input is passed through.
+
+Options:
+  -t, --table             table mode
+  -s, --separator SEP     field separator (default whitespace)
+",
+    ),
+    (
+        "id",
+        "\
+Usage: id [-u] [-g] [-G] [-n]
+
+Print the user's IDs. Without flags, prints uid=...(name) gid=...(group)
+groups=...(group). On platforms without libc the IDs are best-effort
+(zeros) and the group is derived from the user name.
+
+Options:
+  -u, --user      print user ID only
+  -g, --group     print primary group ID only
+  -G, --groups    print all group IDs
+  -n, --name      pair with -u/-g/-G to print names rather than numbers
+",
+    ),
+    (
+        "groups",
+        "\
+Usage: groups
+
+List the user's group memberships, space-separated. Equivalent to id -Gn.
+",
+    ),
 ];

@@ -269,6 +269,46 @@ def load_manifest() -> list[Case]:
         Case("jq_ascii_upcase", ["jq", "ascii_upcase"], input=b'"hello"\n'),
     ]
 
+    # base64 / fold / column — new in v0.2.0.
+    cases += [
+        Case("base64_encode_short", ["base64"], input=b"hello world"),
+        Case("base64_encode_empty", ["base64"], input=b""),
+        Case(
+            "base64_decode_roundtrip",
+            ["base64", "-d"],
+            input=b"aGVsbG8gd29ybGQ=\n",
+        ),
+        Case(
+            "base64_wrap_zero",
+            ["base64", "-w", "0"],
+            input=b"the quick brown fox jumps over the lazy dog",
+        ),
+        Case(
+            "fold_default_width",
+            ["fold", "-w", "10"],
+            input=b"abcdefghijklmnopqrstuvwxyz\n",
+        ),
+        Case(
+            "fold_spaces",
+            ["fold", "-s", "-w", "20"],
+            input=b"this is a long line that should be folded at a smaller width\n",
+        ),
+        Case(
+            "column_table",
+            ["column", "-t"],
+            input=b"name age city\nAlice 30 Boston\nBob 25 NYC\nCarol 28 Seattle\n",
+        ),
+        Case(
+            "column_table_separator",
+            ["column", "-t", "-s", ":"],
+            input=b"alice:30:boston\nbob:25:nyc\ncarol:28:seattle\n",
+        ),
+    ]
+    # id and groups depend on the system's libc-resolved IDs which diverge
+    # from our env-fallback approach, so they're not part of the parity
+    # surface — integration tests in tests/integration.rs cover the basic
+    # invocation patterns instead.
+
     # HTTP/HTTPS — only enabled if HARNESS_NETWORK=1 to avoid flaky CI.
     # Compares status code only (response body changes by date/host).
     if os.environ.get("HARNESS_NETWORK") == "1":

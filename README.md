@@ -10,9 +10,9 @@
 ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey)
 ![Arch](https://img.shields.io/badge/arch-x86__64%20%7C%20ARM64-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Tests](https://img.shields.io/badge/tests-29%20unit%20%2B%2076%20parity-brightgreen.svg)
+![Tests](https://img.shields.io/badge/tests-31%20unit%20%2B%20116%20parity-brightgreen.svg)
 
-A BusyBox-style multi-call binary in Rust — **73 Unix utilities**, one ~2 MB executable, native on Linux, Windows, and macOS. Sister project to [Real-Fruit-Snacks/mainsail](https://github.com/Real-Fruit-Snacks/mainsail) (Python), with a verified-parity test harness.
+A BusyBox-style multi-call binary in Rust — **78 Unix utilities**, one ~2 MB executable, native on Linux, Windows, and macOS. Sister project to [Real-Fruit-Snacks/mainsail](https://github.com/Real-Fruit-Snacks/mainsail) (Python), with a verified-parity test harness.
 
 [Download Latest](https://github.com/Real-Fruit-Snacks/jib/releases/latest)
 &nbsp;·&nbsp;
@@ -57,7 +57,7 @@ ln -s jib cat && echo hi | ./cat        # works for every applet
 
 Every release tag (`v0.x.x`) ships **12 native binaries** built and verified by GitHub Actions:
 
-| Target                           | Full _(73 applets)_       | Slim _(34 applets — POSIX coreutils)_ |
+| Target                           | Full _(78 applets)_       | Slim _(34 applets — POSIX coreutils)_ |
 |----------------------------------|---------------------------|---------------------------------------|
 | Linux x86_64 (glibc 2.35+)       | `jib-linux-x64`           | `jib-linux-x64-slim`                  |
 | Linux x86_64 **musl** (Alpine)   | `jib-linux-x64-musl`      | _(use full or build slim locally)_    |
@@ -73,18 +73,18 @@ Drop any binary anywhere on `PATH` and run.
 Everything is gated behind Cargo features. Pick what you want:
 
 ```bash
-cargo build --release                                                # full (73 applets, ~2 MB)
+cargo build --release                                                # full (78 applets, ~2 MB)
 cargo build --release --no-default-features --features slim          # 34 POSIX coreutils, ~545 KB
 cargo build --release --no-default-features --features "slim,hashing,extras"   # custom
 ```
 
-Feature groups: `slim` (39 POSIX core minus 5 engines = 34), `extras` (19 BusyBox parity), `hashing` (4), `archives` (5), `disk` (2), `network` (3), `json` (1). `full` enables everything.
+Feature groups: `slim` (34 POSIX core), `extras` (24 BusyBox parity), `hashing` (4), `archives` (5), `disk` (2), `network` (3), `json` (1). `full` enables everything.
 
 ---
 
 ## Features
 
-### One binary, seventy-three utilities
+### One binary, seventy-eight utilities
 
 Every common POSIX tool you'd reach for in a shell pipeline — plus `jq` for JSON, `http` for HTTP, `dig` for DNS, `nc` for TCP, and the BusyBox parity gap-fillers (`dd`, `od`, `hexdump`, `diff`, `join`, `fmt`, …). Dispatch via `jib <applet>` or symlink/hardlink to call the applet directly.
 
@@ -184,7 +184,7 @@ src/
 └── applets/        # one file per applet
     ├── ls.rs       #   pub const APPLET: Applet { name, help, aliases, main }
     ├── cat.rs
-    └── …           # 73 modules total
+    └── …           # 78 modules total
 ```
 
 **Four-layer flow:**
@@ -203,13 +203,13 @@ Adding an applet means dropping a file under `src/applets/<name>.rs` exposing `p
 | Feature   | Default | Applets | Notes |
 |-----------|---------|---------|-------|
 | `slim`    | yes     | 34      | POSIX coreutils + `grep`/`sed`/`awk`/`find`/`tr` (uses `regex`) |
-| `extras`  | yes     | 19      | `dd`/`od`/`hexdump`/`fmt`/`getopt`/`split`/`diff`/`join`/`yes`/`nl`/`tac`/`rev`/`cmp`/`comm`/`expand`/`unexpand`/`paste`/`mktemp`/`truncate` (uses `similar` for diff) |
+| `extras`  | yes     | 24      | `base64`/`column`/`dd`/`od`/`hexdump`/`fmt`/`fold`/`getopt`/`groups`/`id`/`split`/`diff`/`join`/`yes`/`nl`/`tac`/`rev`/`cmp`/`comm`/`expand`/`unexpand`/`paste`/`mktemp`/`truncate` (uses `similar` for diff) |
 | `hashing` | yes     | 4       | `md5sum`/`sha1sum`/`sha256sum`/`sha512sum` (`md-5`, `sha1`, `sha2`) |
 | `archives`| yes     | 5       | `gzip`/`gunzip`/`tar`/`zip`/`unzip` (`flate2`, `tar`, `zip`) |
 | `disk`    | yes     | 2       | `du`/`df` |
 | `network` | yes     | 3       | `nc`/`http`/`dig` (HTTPS via `rustls` + `webpki-roots`) |
 | `json`    | yes     | 1       | `jq` subset (see PARITY.md) |
-| `full`    | yes     | 73      | All groups |
+| `full`    | yes     | 78      | All groups |
 
 ---
 

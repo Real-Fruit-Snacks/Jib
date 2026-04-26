@@ -126,7 +126,11 @@ pub mod jq;
 // --- Extras (full-only) -----------------------------------------------------
 
 #[cfg(feature = "extras")]
+pub mod base64;
+#[cfg(feature = "extras")]
 pub mod cmp;
+#[cfg(feature = "extras")]
+pub mod column;
 #[cfg(feature = "extras")]
 pub mod comm;
 #[cfg(feature = "extras")]
@@ -138,9 +142,15 @@ pub mod expand;
 #[cfg(feature = "extras")]
 pub mod fmt;
 #[cfg(feature = "extras")]
+pub mod fold;
+#[cfg(feature = "extras")]
 pub mod getopt;
 #[cfg(feature = "extras")]
+pub mod groups;
+#[cfg(feature = "extras")]
 pub mod hexdump;
+#[cfg(feature = "extras")]
+pub mod id;
 #[cfg(feature = "extras")]
 pub mod join;
 #[cfg(feature = "extras")]
@@ -278,7 +288,11 @@ pub const ALL: &[Applet] = &[
     #[cfg(feature = "json")]
     jq::APPLET,
     #[cfg(feature = "extras")]
+    base64::APPLET,
+    #[cfg(feature = "extras")]
     cmp::APPLET,
+    #[cfg(feature = "extras")]
+    column::APPLET,
     #[cfg(feature = "extras")]
     comm::APPLET,
     #[cfg(feature = "extras")]
@@ -290,9 +304,15 @@ pub const ALL: &[Applet] = &[
     #[cfg(feature = "extras")]
     fmt::APPLET,
     #[cfg(feature = "extras")]
+    fold::APPLET,
+    #[cfg(feature = "extras")]
     getopt::APPLET,
     #[cfg(feature = "extras")]
+    groups::APPLET,
+    #[cfg(feature = "extras")]
     hexdump::APPLET,
+    #[cfg(feature = "extras")]
+    id::APPLET,
     #[cfg(feature = "extras")]
     join::APPLET,
     #[cfg(feature = "extras")]
